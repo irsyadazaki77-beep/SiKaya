@@ -10,7 +10,19 @@ export interface MarketQuote {
   low24h: number;
   volume: string;
   isRealTime: boolean;
+  isSimulated: boolean;
   history24h: number[];
+}
+
+export interface MarketDataState {
+  quotes: Record<string, MarketQuote>;
+  source: string;
+  lastUpdated: string | null;
+  isRealtime: boolean;
+  isStale: boolean;
+  isSimulated: boolean;
+  status: 'ok' | 'simulated' | 'unavailable' | 'loading' | 'error';
+  errorMessage?: string;
 }
 
 const USD_TO_IDR = 16250;
@@ -34,12 +46,42 @@ export const DEFAULT_MARKET_SYMBOLS: Record<string, { name: string; category: 'I
   'SBN019': { name: 'Sukuk Ritel SBR019', category: 'COMMODITY', basePriceIdr: 1000000 }
 };
 
-export async function fetchLiveMarketQuotes(): Promise<Record<string, MarketQuote>> {
+export async function fetchLiveMarketData(): Promise<MarketDataState> {
   try {
     const res = await fetch('/api/stock-prices');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      return {
+        quotes: {},
+        source: 'Yahoo Finance',
+        lastUpdated: null,
+        isRealtime: false,
+        isStale: true,
+        isSimulated: false,
+        status: 'unavailable',
+        errorMessage: 'Data pasar sementara tidak tersedia.'
+      };
+    }
+
     const data = await res.json();
     const results = data?.quoteResponse?.result || [];
+    const isSimulated = Boolean(data?.isSimulated);
+    const isRealtime = Boolean(data?.isRealtime);
+    const source = data?.source || 'Yahoo Finance';
+    const lastUpdated = data?.lastUpdated || new Date().toISOString();
+    const status = data?.status || (results.length > 0 ? 'ok' : 'unavailable');
+
+    if (status === 'unavailable' || results.length === 0) {
+      return {
+        quotes: {},
+        source,
+        lastUpdated,
+        isRealtime: false,
+        isStale: true,
+        isSimulated: false,
+        status: 'unavailable',
+        errorMessage: data?.message || 'Data pasar sementara tidak tersedia.'
+      };
+    }
 
     const quotes: Record<string, MarketQuote> = {};
 
@@ -59,16 +101,6 @@ export async function fetchLiveMarketQuotes(): Promise<Record<string, MarketQuot
       const priceUsd = isUsd ? rawPrice : rawPrice / USD_TO_IDR;
       const priceIdr = isUsd ? rawPrice * USD_TO_IDR : rawPrice;
 
-      // generate synthetic 24h history line
-      const history24h: number[] = [];
-      let base = priceIdr * (1 - changePct / 100);
-      for (let i = 0; i < 10; i++) {
-        const noise = (Math.random() - 0.48) * 0.008;
-        base = base * (1 + noise);
-        history24h.push(Math.round(base));
-      }
-      history24h.push(priceIdr);
-
       quotes[symKey] = {
         symbol: symKey,
         name: config?.name || item.shortName || symKey,
@@ -77,65 +109,43 @@ export async function fetchLiveMarketQuotes(): Promise<Record<string, MarketQuot
         priceUsd: parseFloat(priceUsd.toFixed(2)),
         changePercent: parseFloat(changePct.toFixed(2)),
         changeAmount: Math.round(isUsd ? changeAmt * USD_TO_IDR : changeAmt),
-        high24h: Math.round(priceIdr * 1.02),
-        low24h: Math.round(priceIdr * 0.98),
-        volume: '12.4M',
-        isRealTime: true,
-        history24h
+        high24h: item.regularMarketDayHigh ? (isUsd ? item.regularMarketDayHigh * USD_TO_IDR : item.regularMarketDayHigh) : Math.round(priceIdr * 1.02),
+        low24h: item.regularMarketDayLow ? (isUsd ? item.regularMarketDayLow * USD_TO_IDR : item.regularMarketDayLow) : Math.round(priceIdr * 0.98),
+        volume: item.regularMarketVolume ? (item.regularMarketVolume > 1e6 ? `${(item.regularMarketVolume / 1e6).toFixed(1)}M` : `${(item.regularMarketVolume / 1e3).toFixed(1)}K`) : '12.4M',
+        isRealTime: isRealtime,
+        isSimulated: isSimulated,
+        history24h: [priceIdr * 0.99, priceIdr * 0.995, priceIdr * 1.002, priceIdr]
       };
     });
 
-    // Fill missing fallback symbols so app is always complete
-    Object.keys(DEFAULT_MARKET_SYMBOLS).forEach((symKey) => {
-      if (!quotes[symKey]) {
-        const cfg = DEFAULT_MARKET_SYMBOLS[symKey];
-        const isUsd = cfg.category === 'US' || (cfg.category === 'CRYPTO' && cfg.basePriceUsd! > 100);
-        const priceIdr = cfg.basePriceIdr || (cfg.basePriceUsd! * USD_TO_IDR);
-        const priceUsd = cfg.basePriceUsd || (priceIdr / USD_TO_IDR);
-        const randChg = parseFloat(((Math.random() - 0.45) * 2.5).toFixed(2));
-
-        quotes[symKey] = {
-          symbol: symKey,
-          name: cfg.name,
-          category: cfg.category,
-          priceIdr: Math.round(priceIdr),
-          priceUsd: parseFloat(priceUsd.toFixed(2)),
-          changePercent: randChg,
-          changeAmount: Math.round(priceIdr * (randChg / 100)),
-          high24h: Math.round(priceIdr * 1.015),
-          low24h: Math.round(priceIdr * 0.985),
-          volume: '8.2M',
-          isRealTime: false,
-          history24h: Array.from({ length: 11 }, (_, i) => Math.round(priceIdr * (1 + (i - 5) * 0.002)))
-        };
-      }
-    });
-
-    return quotes;
+    return {
+      quotes,
+      source,
+      lastUpdated,
+      isRealtime,
+      isStale: Boolean(data?.isStale),
+      isSimulated,
+      status: isSimulated ? 'simulated' : 'ok'
+    };
   } catch (error) {
-    console.warn("Failed to fetch live market quotes, utilizing high-fidelity fallback:", error);
-    const quotes: Record<string, MarketQuote> = {};
-    Object.keys(DEFAULT_MARKET_SYMBOLS).forEach((symKey) => {
-      const cfg = DEFAULT_MARKET_SYMBOLS[symKey];
-      const priceIdr = cfg.basePriceIdr || (cfg.basePriceUsd! * USD_TO_IDR);
-      const priceUsd = cfg.basePriceUsd || (priceIdr / USD_TO_IDR);
-      const randChg = parseFloat(((Math.random() - 0.48) * 1.8).toFixed(2));
-
-      quotes[symKey] = {
-        symbol: symKey,
-        name: cfg.name,
-        category: cfg.category,
-        priceIdr: Math.round(priceIdr),
-        priceUsd: parseFloat(priceUsd.toFixed(2)),
-        changePercent: randChg,
-        changeAmount: Math.round(priceIdr * (randChg / 100)),
-        high24h: Math.round(priceIdr * 1.02),
-        low24h: Math.round(priceIdr * 0.98),
-        volume: '15.1M',
-        isRealTime: false,
-        history24h: Array.from({ length: 11 }, (_, i) => Math.round(priceIdr * (1 + (i - 5) * 0.003)))
-      };
-    });
-    return quotes;
+    console.warn("Market API fetch encountered an error:", error);
+    return {
+      quotes: {},
+      source: 'Yahoo Finance',
+      lastUpdated: null,
+      isRealtime: false,
+      isStale: true,
+      isSimulated: false,
+      status: 'unavailable',
+      errorMessage: 'Data pasar sementara tidak tersedia.'
+    };
   }
+}
+
+/**
+ * Backward compatibility helper
+ */
+export async function fetchLiveMarketQuotes(): Promise<Record<string, MarketQuote>> {
+  const data = await fetchLiveMarketData();
+  return data.quotes;
 }

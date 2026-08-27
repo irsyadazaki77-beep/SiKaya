@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { BookOpen, AlertTriangle, ArrowRight, RefreshCw } from 'lucide-react';
-import { User } from '../../context/AuthContext';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { User } from '../../types/user';
+import { ClassroomModuleLayout } from './ClassroomModuleLayout';
+import { QuizSection } from './QuizSection';
+import { PORTFOLIO_QUESTIONS } from '../../data/classroom/moduleQuestions';
 
 interface ModuleProps {
   user: User;
@@ -8,7 +11,7 @@ interface ModuleProps {
   completed: boolean;
 }
 
-export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
+export function PortfolioModule({ onComplete, completed }: ModuleProps) {
   // Current values
   const [rdpuVal, setRdpuVal] = useState<number>(4000000); // 4M RDPU
   const [sbnVal, setSbnVal] = useState<number>(1000000);  // 1M SBN
@@ -20,10 +23,6 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
   const [sahamTarget, setSahamTarget] = useState<number>(50); // Target 50% Saham
 
   const [rebalanced, setRebalanced] = useState<boolean>(false);
-
-  const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: number }>({});
-  const [quizChecked, setQuizChecked] = useState(false);
-  const [quizScore, setQuizScore] = useState(0);
 
   const totalCurrentVal = rdpuVal + sbnVal + sahamVal;
 
@@ -62,56 +61,13 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
     }
   };
 
-  const questions = [
-    {
-      id: 1,
-      q: 'Apa tujuan utama dari melakukan "Rebalancing" (penyeimbangan kembali) portofolio investasi secara berkala (misal tiap 6 atau 12 bulan sekali)?',
-      options: [
-        { text: 'A. Mengambil keuntungan dari aset yang naik tajam, lalu memindahkannya untuk membeli aset murah yang sedang terdiskon, guna meredam volatilitas portofolio sesuai profil risiko.', isCorrect: true },
-        { text: 'B. Mencari sensasi trading harian agar portofolio berganti isi setiap hari.', isCorrect: false },
-        { text: 'C. Membayar biaya administrasi bulanan perantara broker saham.', isCorrect: false }
-      ],
-      explanation: 'Rebalancing mengembalikan alokasi aset ke porsi idealnya. Saat saham naik tinggi, porsinya melebihi target dan meningkatkan profil risiko portofolio secara tidak sadar. Menjual sebagian saham (sell high) dan membeli aset yang underperforming (buy low) mengunci keuntunganmu secara otomatis!'
-    }
-  ];
-
-  const handleSelectOption = (qId: number, optIndex: number) => {
-    if (quizChecked) return;
-    setQuizAnswers({ ...quizAnswers, [qId]: optIndex });
-  };
-
-  const handleCheckQuiz = () => {
-    let correctCount = 0;
-    questions.forEach((q) => {
-      if (quizAnswers[q.id] === q.options.findIndex(o => o.isCorrect)) {
-        correctCount++;
-      }
-    });
-    setQuizScore(correctCount);
-    setQuizChecked(true);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-[10px] font-black uppercase dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900">
-            Modul 10 • Manajemen Risiko
-          </span>
-          {completed && (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-              ✓ Selesai (+100 XP)
-            </span>
-          )}
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight">
-          Klinik Portofolio & Penyeimbangan Kembali (Rebalancing)
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mt-1 leading-relaxed">
-          Seiring berjalannya waktu, pergerakan naik turunnya harga pasar membuat porsi investasimu bergeser (<em>Portfolio Drift</em>). Saham yang meroket tinggi akan mendominasi dan membuat portofoliomu jauh lebih berisiko dari profil awalmu. Melakukan penyeimbangan kembali (rebalancing) secara teratur mengunci keuntungan secara rasional.
-        </p>
-      </div>
-
+    <ClassroomModuleLayout
+      category="Manajemen Risiko"
+      title="Klinik Portofolio & Penyeimbangan Kembali (Rebalancing)"
+      description="Seiring berjalannya waktu, pergerakan naik turunnya harga pasar membuat porsi investasimu bergeser (Portfolio Drift). Saham yang meroket tinggi akan mendominasi dan membuat portofoliomu jauh lebih berisiko dari profil awalmu. Melakukan penyeimbangan kembali (rebalancing) secara teratur mengunci keuntungan secara rasional."
+      completed={completed}
+    >
       {/* Interactive Rebalance Tool */}
       <div className="bg-slate-50 dark:bg-slate-900/10 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4">
         <div>
@@ -124,10 +80,10 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
         {/* Input grid */}
         <div className="grid sm:grid-cols-3 gap-4">
           {/* RDPU Inputs */}
-          <div className="p-3 bg-white dark:bg-slate-900 border border-slate-150 rounded-xl space-y-3">
+          <div className="p-3 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-xl space-y-3">
             <div>
               <span className="text-[9px] font-black text-teal-600 uppercase">1. Reksa Dana RDPU (Aman/Cair)</span>
-              <div className="flex items-center border dark:border-slate-850 rounded px-2 py-1 mt-1 bg-slate-50 dark:bg-slate-950/20 text-xs">
+              <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded px-2 py-1 mt-1 bg-slate-50 dark:bg-slate-950/20 text-xs">
                 <span className="text-slate-400 mr-1.5 font-bold">Rp</span>
                 <input
                   type="number"
@@ -151,10 +107,10 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
           </div>
 
           {/* SBN Inputs */}
-          <div className="p-3 bg-white dark:bg-slate-900 border border-slate-150 rounded-xl space-y-3">
+          <div className="p-3 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-xl space-y-3">
             <div>
               <span className="text-[9px] font-black text-indigo-600 uppercase">2. Surat Berharga SBN (Kupon)</span>
-              <div className="flex items-center border dark:border-slate-850 rounded px-2 py-1 mt-1 bg-slate-50 dark:bg-slate-950/20 text-xs">
+              <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded px-2 py-1 mt-1 bg-slate-50 dark:bg-slate-950/20 text-xs">
                 <span className="text-slate-400 mr-1.5 font-bold">Rp</span>
                 <input
                   type="number"
@@ -178,10 +134,10 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
           </div>
 
           {/* Stock Inputs */}
-          <div className="p-3 bg-white dark:bg-slate-900 border border-slate-150 rounded-xl space-y-3">
+          <div className="p-3 bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-xl space-y-3">
             <div>
               <span className="text-[9px] font-black text-amber-600 uppercase">3. Saham / ETF (Growth)</span>
-              <div className="flex items-center border dark:border-slate-850 rounded px-2 py-1 mt-1 bg-slate-50 dark:bg-slate-950/20 text-xs">
+              <div className="flex items-center border border-slate-200 dark:border-slate-800 rounded px-2 py-1 mt-1 bg-slate-50 dark:bg-slate-950/20 text-xs">
                 <span className="text-slate-400 mr-1.5 font-bold">Rp</span>
                 <input
                   type="number"
@@ -223,7 +179,7 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
             <div className="space-y-2 text-xs">
               {/* RDPU Instruction */}
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-slate-600 dark:text-slate-450">• Reksa Dana RDPU (Target {rdpuTarget}% | Saat Ini {rdpuPctActual.toFixed(0)}%)</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-400">• Reksa Dana RDPU (Target {rdpuTarget}% | Saat Ini {rdpuPctActual.toFixed(0)}%)</span>
                 <span className={`font-black ${rdpuDiff >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                   {rdpuDiff === 0 ? '✓ Sesuai Target' : rdpuDiff > 0 ? `BELI Rp ${rdpuDiff.toLocaleString('id-ID')}` : `JUAL Rp ${Math.abs(rdpuDiff).toLocaleString('id-ID')}`}
                 </span>
@@ -231,7 +187,7 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
 
               {/* SBN Instruction */}
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-slate-600 dark:text-slate-450">• SBN Surat Berharga (Target {sbnTarget}% | Saat Ini {sbnPctActual.toFixed(0)}%)</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-400">• SBN Surat Berharga (Target {sbnTarget}% | Saat Ini {sbnPctActual.toFixed(0)}%)</span>
                 <span className={`font-black ${sbnDiff >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                   {sbnDiff === 0 ? '✓ Sesuai Target' : sbnDiff > 0 ? `BELI Rp ${sbnDiff.toLocaleString('id-ID')}` : `JUAL Rp ${Math.abs(sbnDiff).toLocaleString('id-ID')}`}
                 </span>
@@ -239,7 +195,7 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
 
               {/* Saham Instruction */}
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-slate-600 dark:text-slate-450">• Saham / ETF (Target {sahamTarget}% | Saat Ini {sahamPctActual.toFixed(0)}%)</span>
+                <span className="font-semibold text-slate-600 dark:text-slate-400">• Saham / ETF (Target {sahamTarget}% | Saat Ini {sahamPctActual.toFixed(0)}%)</span>
                 <span className={`font-black ${sahamDiff >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                   {sahamDiff === 0 ? '✓ Sesuai Target' : sahamDiff > 0 ? `BELI Rp ${sahamDiff.toLocaleString('id-ID')}` : `JUAL Rp ${Math.abs(sahamDiff).toLocaleString('id-ID')}`}
                 </span>
@@ -255,85 +211,12 @@ export function PortfolioModule({ user, onComplete, completed }: ModuleProps) {
         )}
       </div>
 
-      {/* Quiz */}
-      <div className="space-y-4">
-        <h4 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest block">Evaluasi Rebalancing Portofolio</h4>
-
-        {questions.map((q, qIdx) => {
-          const selectedIdx = quizAnswers[q.id];
-          return (
-            <div key={q.id} className="p-4 border border-slate-150 dark:border-slate-800 rounded-xl bg-slate-50/40 dark:bg-slate-900/20 space-y-3">
-              <p className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-250">{qIdx + 1}. {q.q}</p>
-              <div className="grid gap-2">
-                {q.options.map((opt, oIdx) => {
-                  const isSelected = selectedIdx === oIdx;
-                  let style = 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300';
-                  if (isSelected) {
-                    if (quizChecked) {
-                      style = opt.isCorrect 
-                        ? 'bg-emerald-50 border-emerald-500 text-emerald-850 dark:bg-emerald-950/25 dark:border-emerald-700 dark:text-emerald-300 font-bold' 
-                        : 'bg-rose-50 border-rose-400 text-rose-850 dark:bg-rose-950/25 dark:border-rose-700 dark:text-rose-300 font-bold';
-                    } else {
-                      style = 'bg-teal-50 border-teal-500 text-teal-850 dark:bg-teal-950/25 dark:border-teal-700 dark:text-teal-300 font-bold';
-                    }
-                  } else if (quizChecked && opt.isCorrect) {
-                    style = 'bg-emerald-50 border-emerald-500 text-emerald-850 dark:bg-emerald-950/10 dark:border-emerald-800 dark:text-emerald-350';
-                  }
-
-                  return (
-                    <button
-                      key={oIdx}
-                      type="button"
-                      onClick={() => handleSelectOption(q.id, oIdx)}
-                      className={`p-3 text-left text-xs rounded-xl border transition-all cursor-pointer ${style}`}
-                    >
-                      {opt.text}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {quizChecked && (
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed italic bg-white dark:bg-slate-900 p-2.5 rounded-lg border dark:border-slate-800">
-                  <strong>Penjelasan:</strong> {q.explanation}
-                </p>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Sources list */}
-      <div className="p-4 bg-slate-50 dark:bg-slate-900/10 border border-slate-200 dark:border-slate-800/80 rounded-xl">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-          <BookOpen className="w-3 h-3" /> Referensi Manajemen Portofolio
-        </p>
-        <div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 font-medium">
-          <p>• <strong>Modern Portfolio Theory & Asset Allocation Model</strong> (Harry Markowitz) - Penerima Hadiah Nobel Ekonomi atas penelitian optimalisasi risiko investasi.</p>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800">
-        {quizChecked ? (
-          <span className="text-xs font-bold text-slate-500">Skor: {quizScore} / {questions.length} Benar!</span>
-        ) : (
-          <button
-            onClick={handleCheckQuiz}
-            disabled={Object.keys(quizAnswers).length < questions.length}
-            className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold disabled:opacity-40 cursor-pointer"
-          >
-            Periksa Jawaban
-          </button>
-        )}
-
-        <button
-          onClick={() => onComplete('portfolio')}
-          className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-black transition-all flex items-center gap-1 cursor-pointer"
-        >
-          {completed ? 'Simpan Progres' : 'Selesaikan Kelas & Klaim Kelulusan! 🎓'} <ArrowRight className="w-4 h-4" />
-        </button>
-      </div>
-    </div>
+      <QuizSection
+        moduleId="portfolio"
+        questions={PORTFOLIO_QUESTIONS}
+        completed={completed}
+        onComplete={onComplete}
+      />
+    </ClassroomModuleLayout>
   );
 }

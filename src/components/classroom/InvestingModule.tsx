@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { BookOpen, ArrowRight } from 'lucide-react';
-import { User } from '../../context/AuthContext';
+import { ArrowRight, BookOpen } from 'lucide-react';
+import { User } from '../../types/user';
+import { ClassroomModuleLayout } from './ClassroomModuleLayout';
 
 interface ModuleProps {
   user: User;
@@ -8,7 +9,7 @@ interface ModuleProps {
   completed: boolean;
 }
 
-export function InvestingModule({ user, onComplete, completed }: ModuleProps) {
+export function InvestingModule({ onComplete, completed }: ModuleProps) {
   const [riskQ1, setRiskQ1] = useState<string>('');
   const [riskQ2, setRiskQ2] = useState<string>('');
   const [riskQ3, setRiskQ3] = useState<string>('');
@@ -47,24 +48,12 @@ export function InvestingModule({ user, onComplete, completed }: ModuleProps) {
   const riskProfile = getRiskProfile();
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-[10px] font-black uppercase dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-900">
-            Tipe Investor
-          </span>
-          {completed && (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-              ✓ Selesai (+100 XP)
-            </span>
-          )}
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white">Menemukan Profil Risiko & Alokasi Aset Pertama</h3>
-        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mt-1 leading-relaxed">
-          Tidak ada satu instrumen investasi yang cocok untuk semua orang. Profil risiko menentukan seberapa kuat emosimu menghadapi fluktuasi harga pasar. Mari isi evaluasi kilat untuk mencocokkan kepribadianmu:
-        </p>
-      </div>
-
+    <ClassroomModuleLayout
+      category="Tipe Investor"
+      title="Menemukan Profil Risiko & Alokasi Aset Pertama"
+      description="Tidak ada satu instrumen investasi yang cocok untuk semua orang. Profil risiko menentukan seberapa kuat emosimu menghadapi fluktuasi harga pasar. Mari isi evaluasi kilat untuk mencocokkan kepribadianmu:"
+      completed={completed}
+    >
       {/* Risk profiler questions */}
       <div className="space-y-5 bg-slate-50 dark:bg-slate-900/10 p-5 rounded-2xl border border-slate-150 dark:border-slate-850">
         {/* Question 1 */}
@@ -217,6 +206,6 @@ export function InvestingModule({ user, onComplete, completed }: ModuleProps) {
           {completed ? 'Simpan & Lanjut Modul 5' : 'Selesaikan Modul & Ambil +100 XP'} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </ClassroomModuleLayout>
   );
 }

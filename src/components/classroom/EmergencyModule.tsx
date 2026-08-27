@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BookOpen, AlertTriangle, ArrowRight } from 'lucide-react';
-import { User } from '../../context/AuthContext';
+import { User } from '../../types/user';
+import { ClassroomModuleLayout } from './ClassroomModuleLayout';
 
 interface ModuleProps {
   user: User;
@@ -8,7 +9,7 @@ interface ModuleProps {
   completed: boolean;
 }
 
-export function EmergencyModule({ user, onComplete, completed }: ModuleProps) {
+export function EmergencyModule({ onComplete, completed }: ModuleProps) {
   const [emergencyExpenses, setEmergencyExpenses] = useState<number>(3000000); // Default Rp 3.000.000 / month
   const [emergencyDependents, setEmergencyDependents] = useState<'single' | 'married' | 'family'>('single');
   const [emergencySaved, setEmergencySaved] = useState<number>(1500000); // Saved currently
@@ -80,25 +81,12 @@ export function EmergencyModule({ user, onComplete, completed }: ModuleProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="px-2.5 py-0.5 bg-sky-50 border border-sky-100 rounded-full text-sky-700 text-[10px] font-black uppercase dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-900">
-            Pondasi Finansial
-          </span>
-          {completed && (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-              ✓ Selesai (+100 XP)
-            </span>
-          )}
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white font-sans tracking-tight">Dana Darurat (Emergency Fund) & Uji Stres Krisis</h3>
-        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mt-1 leading-relaxed">
-          Banyak <em>finfluencer</em> (influencer finansial) menyesatkan Gen Z dengan menyuruh langsung terjun bebas berinvestasi saham, trading harian, atau membeli kripto tanpa memiliki dana darurat. Ini sangat menyesatkan dan berbahaya! 
-          Dana darurat adalah <strong>pondasi keuangan mutlak</strong>. Sebelum menaruh uang sepeser pun di instrumen berisiko, pastikan kamu memiliki tabungan cair terpisah untuk mengantisipasi kejadian tak terduga.
-        </p>
-      </div>
-
+    <ClassroomModuleLayout
+      category="Pondasi Finansial"
+      title="Dana Darurat (Emergency Fund) & Uji Stres Krisis"
+      description="Banyak influencer finansial menyuruh langsung terjun bebas berinvestasi saham, trading harian, atau membeli kripto tanpa memiliki dana darurat. Ini sangat menyesatkan dan berbahaya! Dana darurat adalah pondasi keuangan mutlak. Sebelum menaruh uang sepeser pun di instrumen berisiko, pastikan kamu memiliki tabungan cair terpisah."
+      completed={completed}
+    >
       {/* Interactive Simulator Card */}
       <div className="grid md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-900/15 p-5 sm:p-6 rounded-2xl border border-slate-200/60 dark:border-slate-800/80">
         
@@ -306,6 +294,6 @@ export function EmergencyModule({ user, onComplete, completed }: ModuleProps) {
           {completed ? 'Simpan & Lanjut Modul 6' : 'Selesaikan Modul & Ambil +100 XP'} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </ClassroomModuleLayout>
   );
 }

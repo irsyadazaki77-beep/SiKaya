@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { auth, googleAuthProvider, db } from '../lib/firebase';
-import { signInWithPopup, onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 
 export interface User {
   fullName: string;
@@ -19,8 +19,8 @@ interface AuthContextType {
   login: () => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => void;
-  completeModule: (moduleId: string, xpReward?: number) => void;
-  addXp: (amount: number) => void;
+  completeModule: (moduleId: string, xpReward?: number) => Promise<void>;
+  addXp: (amount: number) => Promise<void>;
   updateProfile: (fullName: string, avatar: string, literacyLevel?: string) => Promise<void>;
 }
 
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           let completedModules: string[] = [];
           try {
             const progRef = collection(db, 'learningProgress');
-            const q = query(progRef, where('userId', '==', firebaseUser.uid));
+            const q = query(progRef, where('userId', '==', firebaseUser.uid), limit(50));
             const querySnapshot = await getDocs(q);
             completedModules = querySnapshot.docs.map(doc => doc.data().moduleId);
           } catch (e) {
@@ -141,6 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(guestProfile);
     } catch (e) {
+      console.error("Failed to parse guest profile:", e);
       setUser({
         fullName: 'Siswa Tamu (Demo)',
         email: 'guest@sikaya.com',
@@ -164,37 +165,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user.completedModules.includes(moduleId)) return;
     
     const updatedModules = [...user.completedModules, moduleId];
-    const updatedXp = user.xp + xpReward;
+    const optimisticXp = user.xp + xpReward;
 
     setUser(prev => prev ? ({
       ...prev,
       completedModules: updatedModules,
-      xp: updatedXp
+      xp: optimisticXp
     }) : prev);
 
-    if (token && token !== 'demo-token' && auth.currentUser) {
+    if (auth.currentUser) {
       try {
-        const uid = auth.currentUser.uid;
-        // Save learning progress directly to Firestore
-        await setDoc(doc(db, 'learningProgress', `${uid}_${moduleId}`), {
-          userId: uid,
-          moduleId,
-          status: 'COMPLETED',
-          completedAt: new Date().toISOString()
-        }, { merge: true });
-
-        // Update user XP directly to Firestore
-        await updateDoc(doc(db, 'users', uid), {
-          xp: updatedXp
+        const activeToken = await auth.currentUser.getIdToken();
+        const res = await fetch('/api/user/complete-module', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${activeToken}`
+          },
+          body: JSON.stringify({ moduleId })
         });
+
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.currentXp !== undefined) {
+            setUser(prev => prev ? ({ ...prev, xp: resData.currentXp }) : prev);
+          }
+        }
       } catch (err) {
-        console.error("Error updating module completion:", err);
+        console.error("Error authoritatively completing module on server:", err);
       }
     } else if (token === 'demo-token') {
       const updatedGuest = {
         ...user,
         completedModules: updatedModules,
-        xp: updatedXp
+        xp: optimisticXp
       };
       localStorage.setItem('guest_profile', JSON.stringify(updatedGuest));
     }
@@ -202,23 +206,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const addXp = async (amount: number) => {
     if (!user) return;
-    const updatedXp = user.xp + amount;
+    const optimisticXp = user.xp + amount;
 
-    setUser(prev => prev ? ({ ...prev, xp: updatedXp }) : prev);
+    setUser(prev => prev ? ({ ...prev, xp: optimisticXp }) : prev);
 
-    if (token && token !== 'demo-token' && auth.currentUser) {
+    if (auth.currentUser) {
       try {
-        const uid = auth.currentUser.uid;
-        await updateDoc(doc(db, 'users', uid), {
-          xp: updatedXp
+        const activeToken = await auth.currentUser.getIdToken();
+        const res = await fetch('/api/user/add-xp', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${activeToken}`
+          },
+          body: JSON.stringify({ amount })
         });
+
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.currentXp !== undefined) {
+            setUser(prev => prev ? ({ ...prev, xp: resData.currentXp }) : prev);
+          }
+        }
       } catch (err) {
-        console.error("Error updating XP:", err);
+        console.error("Error authoritatively adding XP on server:", err);
       }
     } else if (token === 'demo-token') {
       const updatedGuest = {
         ...user,
-        xp: updatedXp
+        xp: optimisticXp
       };
       localStorage.setItem('guest_profile', JSON.stringify(updatedGuest));
     }
@@ -236,16 +252,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(updatedUser);
 
-    if (token && token !== 'demo-token' && auth.currentUser) {
+    if (auth.currentUser) {
       try {
-        const uid = auth.currentUser.uid;
-        await updateDoc(doc(db, 'users', uid), {
-          fullName,
-          avatar,
-          ...(literacyLevel && { literacyLevel })
+        const activeToken = await auth.currentUser.getIdToken();
+        await fetch('/api/user/profile', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${activeToken}`
+          },
+          body: JSON.stringify({ fullName, avatar })
         });
       } catch (err) {
-        console.error('Failed to sync profile to database', err);
+        console.error('Failed to sync profile to server API', err);
       }
     } else if (token === 'demo-token') {
       localStorage.setItem('guest_profile', JSON.stringify(updatedUser));
@@ -259,10 +278,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

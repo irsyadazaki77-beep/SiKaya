@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   PieChart as PieChartIcon, 
@@ -27,11 +27,9 @@ import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip, LineC
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { db, auth } from '../lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, getDocs, query, where, limit } from 'firebase/firestore';
 import { PageHeader } from '../components/PageHeader';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import * as XLSX from 'xlsx';
+import { exportElementToPdf, exportDataToExcel } from '../utils/exportUtils';
 
 interface ManualAsset {
   id: string;
@@ -87,15 +85,25 @@ export function PortfolioPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [livePrices, setLivePrices] = useState<Record<string, number>>({});
-  const [priceStatus, setPriceStatus] = useState<'real-time' | 'simulasi'>('simulasi');
+  const [priceStatus, setPriceStatus] = useState<'real-time' | 'simulasi' | 'unavailable'>('real-time');
+  const [marketSource, setMarketSource] = useState<string>('Yahoo Finance');
 
   useEffect(() => {
     let isMounted = true;
     const fetchPrices = async () => {
       try {
         const res = await fetch('/api/stock-prices');
-        if (!res.ok) throw new Error();
+        if (!res.ok) throw new Error('Market API error');
         const json = await res.json();
+        
+        if (json.status === 'unavailable') {
+          if (isMounted) {
+            setPriceStatus('unavailable');
+            setMarketSource(json.source || 'Yahoo Finance');
+          }
+          return;
+        }
+
         const results = json?.quoteResponse?.result;
         if (results && Array.isArray(results)) {
           const prices: Record<string, number> = {};
@@ -107,13 +115,13 @@ export function PortfolioPage() {
           });
           if (isMounted) {
             setLivePrices(prices);
-            setPriceStatus('real-time');
+            setPriceStatus(json.isSimulated ? 'simulasi' : 'real-time');
+            setMarketSource(json.source || 'Yahoo Finance');
           }
         }
       } catch (err) {
-        console.warn("Using simulation fallback prices for portfolio");
         if (isMounted) {
-          setPriceStatus('simulasi');
+          setPriceStatus('unavailable');
         }
       }
     };
@@ -177,7 +185,8 @@ export function PortfolioPage() {
     try {
       const q = query(
         collection(db, 'investmentHistory'),
-        where('userId', '==', auth.currentUser?.uid || '')
+        where('userId', '==', auth.currentUser?.uid || ''),
+        limit(50)
       );
       const querySnapshot = await getDocs(q);
       const data = querySnapshot.docs.map(doc => {
@@ -209,14 +218,24 @@ export function PortfolioPage() {
 
   const handleAddManualAsset = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formSymbol || !formBuyPrice || !formShares) {
+    if (!formSymbol.trim() || !formBuyPrice || !formShares) {
       toast.error('Harap isi semua kolom wajib!');
       return;
     }
 
     const sharesNum = Number(formShares);
     const buyPriceNum = Number(formBuyPrice);
-    const currentPriceNum = Number(formCurrentPrice) || buyPriceNum; // default to buy price if empty
+    const currentPriceNum = formCurrentPrice ? Number(formCurrentPrice) : buyPriceNum;
+
+    if (isNaN(sharesNum) || sharesNum <= 0) {
+      toast.error('Jumlah unit aset harus lebih dari 0.');
+      return;
+    }
+
+    if (isNaN(buyPriceNum) || buyPriceNum < 0 || isNaN(currentPriceNum) || currentPriceNum < 0) {
+      toast.error('Harga beli atau harga saat ini tidak boleh negatif.');
+      return;
+    }
 
     const newAsset: ManualAsset = {
       id: Math.random().toString(36).substring(2, 9),
@@ -487,23 +506,17 @@ export function PortfolioPage() {
     if (!pdfRef.current) return;
     toast.success('Menyiapkan file PDF...');
     try {
-      const canvas = await html2canvas(pdfRef.current, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('Laporan_Portofolio_Konsolidasi.pdf');
+      await exportElementToPdf(pdfRef.current, 'Laporan_Portofolio_Konsolidasi.pdf');
       toast.success('Berhasil mengunduh PDF!');
     } catch (err) {
+      console.error(err);
       toast.error('Gagal mengunduh PDF');
     }
   };
 
-  const exportExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(
-      combinedAssetsList.map(inv => ({
+  const exportExcel = async () => {
+    try {
+      const dataToExport = combinedAssetsList.map(inv => ({
         Nama_Aset: inv.name,
         Simbol: inv.symbol,
         Tipe: inv.type,
@@ -511,12 +524,13 @@ export function PortfolioPage() {
         Estimasi_Valuasi: inv.amount,
         Perubahan: `${inv.change.toFixed(1)}%`,
         Status: inv.isManual ? "Manual" : "Virtual Simulator"
-      }))
-    );
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Daftar_Aset_Konsolidasi");
-    XLSX.writeFile(wb, "Daftar_Portofolio.xlsx");
-    toast.success('Berhasil mengunduh Excel!');
+      }));
+      await exportDataToExcel(dataToExport, "Daftar_Aset_Konsolidasi", "Daftar_Portofolio.xlsx");
+      toast.success('Berhasil mengunduh Excel!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal mengunduh file Excel');
+    }
   };
 
   return (
@@ -935,26 +949,35 @@ export function PortfolioPage() {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-teal-500 to-indigo-500/10 blur-3xl rounded-full"></div>
+          <div className="bg-slate-900 text-white p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
             
             <div className="space-y-3 relative z-10">
               <span className="text-2xl">💡</span>
-              <h4 className="text-lg font-black font-display leading-tight">Gunakan Simulator Raksasa Belajar!</h4>
-              <p className="text-xs text-slate-300 font-medium leading-relaxed">
+              <h4 className="text-lg font-bold font-display leading-tight">Gunakan Simulator Raksasa Belajar!</h4>
+              <p className="text-sm text-slate-300 font-medium leading-relaxed max-w-sm">
                 Ingin belajar trading saham, kripto, atau reksadana dengan uang mainan virtual sebelum terjun langsung ke pasar modal? Masuk ke modul Belajar, asah skill di classroom, dan lakukan simulasi trading bebas risiko!
               </p>
             </div>
-
+  
             <div className="pt-6 relative z-10">
               <a 
                 href="/belajar"
-                className="inline-flex items-center gap-2 px-5 py-3 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-lg shadow-black/30"
+                className="inline-flex items-center gap-2 px-5 py-3 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-sm font-semibold transition-colors"
               >
                 <span>Pergi ke Kelas Belajar</span>
-                <ArrowUpRight className="w-4.5 h-4.5" />
+                <ArrowUpRight className="w-4 h-4" />
               </a>
             </div>
+          </div>
+        </div>
+
+        {/* Financial Disclaimer Banner */}
+        <div className="p-4 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 text-slate-500 dark:text-slate-400 text-xs">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+            <span>
+              <strong>Disclaimer Keuangan:</strong> Ringkasan portofolio dan pencatatan aset manual ini disediakan untuk tujuan pelacakan literasi keuangan pribadi, bukan sebagai alat analisis sekuritas resmi atau rekomendasi investasi.
+            </span>
           </div>
         </div>
 

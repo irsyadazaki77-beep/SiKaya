@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Wallet, BookOpen, Target, Activity, TrendingUp, ArrowRight, Plus, 
-  Minus, RefreshCw, Award, Compass, Heart, ShieldCheck, Zap, AlertCircle
+  Minus, RefreshCw, Award, Compass, Heart, ShieldCheck, Zap, AlertCircle,
+  PiggyBank, LineChart
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -83,7 +84,6 @@ export function UserDashboard() {
 
   // Load Data
   useEffect(() => {
-    // 1. Calculate assets from localStorage
     const savedAssets = localStorage.getItem('sikaya_manual_assets');
     const savedVirtual = localStorage.getItem('sikaya_virtual_investments');
     let calcAssetsTotal = 0;
@@ -98,7 +98,6 @@ export function UserDashboard() {
         console.error("Failed to parse manual assets", e);
       }
     } else {
-      // Setup mock assets if none exist for a cool rich initial view
       const initialAssets = [
         { id: '1', symbol: 'BBRI', name: 'Bank Rakyat Indonesia', type: 'Saham', buyPrice: 4800, currentPrice: 4950, shares: 1000 },
         { id: '2', symbol: 'BTC', name: 'Bitcoin', type: 'Kripto', buyPrice: 950000000, currentPrice: 980000000, shares: 0.002 }
@@ -107,7 +106,6 @@ export function UserDashboard() {
       calcAssetsTotal = 4950000 + 1960000;
     }
 
-    // Load virtual simulator balance
     let simulatorCash = 10000000;
     const savedSimCash = localStorage.getItem('sikaya_virtual_cash');
     if (savedSimCash) {
@@ -120,7 +118,6 @@ export function UserDashboard() {
     setAssetsTotal(calcAssetsTotal);
     setNetWorth(simulatorCash + calcAssetsTotal);
 
-    // Dynamic price status fallback
     const savedStatus = localStorage.getItem('sikaya_price_status');
     if (savedStatus) {
       setPriceStatus(savedStatus as 'real-time' | 'simulasi');
@@ -128,7 +125,6 @@ export function UserDashboard() {
       setPriceStatus('real-time');
     }
 
-    // 2. Load Target
     const savedTarget = localStorage.getItem('sikaya_financial_target');
     if (savedTarget) {
       try {
@@ -137,7 +133,6 @@ export function UserDashboard() {
         console.error("Failed to parse financial target", e);
       }
     } else {
-      // Default initial goal
       const defaultTarget: FinancialTarget = {
         name: 'Membeli Laptop Kuliah Baru',
         targetAmount: 15000000,
@@ -148,7 +143,6 @@ export function UserDashboard() {
       setTarget(defaultTarget);
     }
 
-    // 3. Load Recent Activity Logs
     const savedLogs = localStorage.getItem('sikaya_activity_logs');
     if (savedLogs) {
       try {
@@ -166,7 +160,6 @@ export function UserDashboard() {
     }
   }, []);
 
-  // Update financial target savings
   const handleAddSavings = (e: React.FormEvent) => {
     e.preventDefault();
     if (!target || !addSavingsAmount) return;
@@ -184,11 +177,9 @@ export function UserDashboard() {
     setAddSavingsAmount('');
     setShowAddSavingsInput(false);
 
-    // Track activity
     logActivity('keuangan', 'Menabung untuk Target', `Menambahkan Rp ${parsedAmount.toLocaleString('id-ID')} ke "${target.name}"`);
   };
 
-  // Create a new target
   const handleCreateTarget = (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetNameInput || !targetAmountInput) return;
@@ -204,16 +195,13 @@ export function UserDashboard() {
     setTarget(newTarget);
     setShowTargetModal(false);
     
-    // Clear inputs
     setTargetNameInput('');
     setTargetAmountInput('');
     setTargetSavedInput('');
 
-    // Track activity
     logActivity('keuangan', 'Membuat Target Finansial Baru', `Target "${newTarget.name}" sukses dibuat!`);
   };
 
-  // Log activity helper
   const logActivity = (type: 'belajar' | 'simulasi' | 'keuangan' | 'komunitas', title: string, desc: string) => {
     const newLog: ActivityLog = {
       id: Date.now().toString(),
@@ -236,491 +224,251 @@ export function UserDashboard() {
 
   if (!user) return null;
 
-  // Classroom stats calculations
   const totalModules = 10;
   const completedCount = user.completedModules?.length || 0;
   const progressPercent = Math.round((completedCount / totalModules) * 100);
 
-  // Target Calculations
   const targetProgressPercent = target ? Math.round((target.currentSaved / target.targetAmount) * 100) : 0;
   const targetRemaining = target ? Math.max(0, target.targetAmount - target.currentSaved) : 0;
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.05
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { 
-        type: "spring" as const, 
-        stiffness: 100, 
-        damping: 15 
-      } 
-    }
-  };
-
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8"
-    >
-      <PageHeader
-        category="Keuangan"
-        title={`Ringkasan Finansial ${user.fullName}`}
-        description="Pantau total kekayaan bersih, progres belajar, target impian, dan misi harian dalam satu tempat."
-        badge={`${user.xp || 0} XP • LEVEL ${user.literacyLevel || 'Pemula'}`}
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Link to="/belajar" className="ui-btn-primary h-9 text-xs">
-              <BookOpen className="w-3.5 h-3.5" /> Lanjut Belajar
-            </Link>
-            <Link to="/simulasi" className="ui-btn-secondary h-9 text-xs">
-              <Activity className="w-3.5 h-3.5 text-emerald-500 animate-pulse" /> Mulai Simulasi
-            </Link>
-          </div>
-        }
-      />
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-2">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-100 tracking-tight">
+            Halo, {user.fullName.split(' ')[0]} 👋
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">Berikut adalah ringkasan keuangan Anda hari ini.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link to="/belajar" className="ui-btn-primary">
+            <BookOpen className="w-4 h-4" /> Belajar
+          </Link>
+          <Link to="/simulasi" className="ui-btn-secondary">
+            <Activity className="w-4 h-4 text-emerald-500" /> Simulasi
+          </Link>
+        </div>
+      </div>
 
-      {/* Grid Dashboard */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* LEFT COLUMN: Saldo & Target (8 Cols on large) */}
-        <div className="lg:col-span-8 space-y-6 sm:space-y-8">
+        {/* Main Financial Overview (2 cols on large) */}
+        <div className="lg:col-span-2 space-y-6">
           
-          {/* Card 1: Ringkasan Saldo (Balance Summary) */}
-          <motion.div 
-            variants={itemVariants}
-            className="ui-card relative overflow-hidden"
-          >
-            <div className="flex justify-between items-start mb-6">
+          <div className="ui-card flex flex-col justify-between h-auto min-h-[220px]">
+            <div className="flex justify-between items-start">
               <div>
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">
-                  Total Kekayaan Bersih (Net Worth)
-                </span>
-                <h3 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mt-1">
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Kekayaan Bersih</p>
+                <h2 className="text-4xl font-semibold text-slate-900 dark:text-white mt-1">
                   Rp {netWorth.toLocaleString('id-ID')}
-                </h3>
+                </h2>
               </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <span className={`inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full border tracking-wide uppercase font-mono ${
-                  priceStatus === 'real-time' 
-                    ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800' 
-                    : 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800'
-                }`}>
+              <div className="flex flex-col items-end gap-2">
+                <span className="ui-badge ui-badge-emerald">
                   <span className={`w-1.5 h-1.5 rounded-full ${priceStatus === 'real-time' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
-                  {priceStatus === 'real-time' ? 'Real-time feed' : 'Simulasi / Delayed'}
-                </span>
-                <span className="inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 tracking-wide uppercase font-mono">
-                  Uang Demo & Simulasi
+                  {priceStatus === 'real-time' ? 'Data Live' : 'Simulasi'}
                 </span>
               </div>
             </div>
 
-            {/* Asset Split Visualization */}
-            <div className="space-y-4">
-              <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-teal-500 inline-block"></span>
-                  Kas Simulasi (Rp {cashBalance.toLocaleString('id-ID')})
+            <div className="mt-8 space-y-3">
+              <div className="flex justify-between text-sm font-medium">
+                <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <span className="w-3 h-3 rounded bg-teal-500"></span> Kas (Rp {cashBalance.toLocaleString('id-ID')})
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>
-                  Investasi Portofolio (Rp {assetsTotal.toLocaleString('id-ID')})
+                <span className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                  <span className="w-3 h-3 rounded bg-indigo-500"></span> Investasi (Rp {assetsTotal.toLocaleString('id-ID')})
                 </span>
               </div>
-              
-              <div className="w-full h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(10, (cashBalance / netWorth) * 100)}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-teal-500 to-teal-600" 
-                  title="Kas"
-                ></motion.div>
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.max(10, (assetsTotal / netWorth) * 100)}%` }}
-                  transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600" 
-                  title="Investasi"
-                ></motion.div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800/60">
-                <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Aset Saham</p>
-                  <p className="text-xs sm:text-sm font-extrabold mt-1 text-slate-850 dark:text-slate-200">
-                    Rp {(assetsTotal * 0.7).toLocaleString('id-ID')}
-                  </p>
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Aset Kripto</p>
-                  <p className="text-xs sm:text-sm font-extrabold mt-1 text-slate-850 dark:text-slate-200">
-                    Rp {(assetsTotal * 0.2).toLocaleString('id-ID')}
-                  </p>
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-2xl">
-                  <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Emas & Lainnya</p>
-                  <p className="text-xs sm:text-sm font-extrabold mt-1 text-slate-850 dark:text-slate-200">
-                    Rp {(assetsTotal * 0.1).toLocaleString('id-ID')}
-                  </p>
-                </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-850 rounded-2xl flex flex-col justify-center items-center">
-                  <Link 
-                    to="/portfolio" 
-                    className="text-[11px] font-black text-teal-600 dark:text-teal-400 hover:text-teal-700 hover:underline flex items-center gap-1"
-                  >
-                    Atur Portofolio <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
+              <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+                <div style={{ width: `${Math.max(5, (cashBalance / netWorth) * 100)}%` }} className="h-full bg-teal-500"></div>
+                <div style={{ width: `${Math.max(5, (assetsTotal / netWorth) * 100)}%` }} className="h-full bg-indigo-500"></div>
               </div>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Card 1.5: Financial Health Score */}
-          <motion.div variants={itemVariants}>
-            <FinancialHealthCard profile={finProfile} onEditProfile={() => setShowProfileModal(true)} />
-          </motion.div>
+          <FinancialHealthCard profile={finProfile} onEditProfile={() => setShowProfileModal(true)} />
 
-          {/* Card 2: Target Finansial (Dream Planner) */}
-          <motion.div 
-            variants={itemVariants}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden"
-          >
+          <div className="ui-card">
             {target ? (
               <div className="space-y-6">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] font-black bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-md border border-indigo-100 dark:border-indigo-900/40 uppercase tracking-widest font-mono">
-                      🎯 TARGET FINANSIAL ANDA: {target.category}
-                    </span>
-                    <h4 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight mt-2.5 flex items-center gap-2">
-                      {target.name}
-                    </h4>
+                    <span className="ui-badge ui-badge-indigo mb-2">TARGET: {target.category.toUpperCase()}</span>
+                    <h3 className="ui-card-title">{target.name}</h3>
                   </div>
-                  <button 
-                    onClick={() => setShowTargetModal(true)}
-                    className="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors"
-                  >
-                    Ganti Target
+                  <button onClick={() => setShowTargetModal(true)} className="text-sm text-indigo-600 hover:underline font-medium">
+                    Edit
                   </button>
                 </div>
 
-                {/* Progress Indicators */}
-                <div className="bg-slate-50 dark:bg-slate-850/60 rounded-2xl p-4 sm:p-5 border border-slate-100 dark:border-slate-800/40 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
                   <div>
-                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Kebutuhan</p>
-                    <p className="text-base font-black text-slate-850 dark:text-slate-100 mt-1">Rp {target.targetAmount.toLocaleString('id-ID')}</p>
-                  </div>
-                  <div className="border-y sm:border-y-0 sm:border-x border-slate-200 dark:border-slate-800 py-2 sm:py-0">
-                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Terkumpul</p>
-                    <p className="text-base font-black text-teal-600 dark:text-teal-400 mt-1">Rp {target.currentSaved.toLocaleString('id-ID')}</p>
+                    <p className="text-xs text-slate-500 font-medium">Target Dana</p>
+                    <p className="text-base font-semibold mt-0.5">Rp {target.targetAmount.toLocaleString('id-ID')}</p>
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kurang</p>
-                    <p className="text-base font-black text-rose-500 mt-1">Rp {targetRemaining.toLocaleString('id-ID')}</p>
+                    <p className="text-xs text-slate-500 font-medium">Terkumpul</p>
+                    <p className="text-base font-semibold text-teal-600 mt-0.5">Rp {target.currentSaved.toLocaleString('id-ID')}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium">Sisa</p>
+                    <p className="text-base font-semibold text-slate-700 dark:text-slate-300 mt-0.5">Rp {targetRemaining.toLocaleString('id-ID')}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between items-center text-xs font-extrabold text-slate-500">
-                    <span>Progres Pengumpulan</span>
-                    <span className="text-indigo-600 dark:text-indigo-400 font-mono">{targetProgressPercent}%</span>
+                  <div className="flex justify-between items-center text-sm font-medium">
+                    <span className="text-slate-600 dark:text-slate-400">Progres ({targetProgressPercent}%)</span>
                   </div>
-                  <div className="w-full h-3 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${targetProgressPercent}%` }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-indigo-500 to-teal-500 rounded-full" 
-                    ></motion.div>
+                  <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div style={{ width: `${targetProgressPercent}%` }} className="h-full bg-indigo-500 rounded-full"></div>
                   </div>
                 </div>
 
-                {/* Inline saving button */}
-                <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
-                  {!showAddSavingsInput ? (
-                    <button
-                      onClick={() => setShowAddSavingsInput(true)}
-                      className="w-full sm:w-auto px-5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-400 font-black text-xs rounded-xl transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" /> Tambah Tabungan Bulanan
-                    </button>
-                  ) : (
-                    <form onSubmit={handleAddSavings} className="w-full flex flex-col sm:flex-row gap-2">
-                      <input 
-                        type="number"
-                        placeholder="Jumlah tabungan baru (Rp)"
-                        value={addSavingsAmount}
-                        onChange={(e) => setAddSavingsAmount(e.target.value)}
-                        className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button 
-                          type="submit"
-                          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl"
-                        >
-                          Simpan
-                        </button>
-                        <button 
-                          type="button"
-                          onClick={() => setShowAddSavingsInput(false)}
-                          className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-600 dark:text-slate-400 font-bold text-xs rounded-xl"
-                        >
-                          Batal
-                        </button>
-                      </div>
-                    </form>
-                  )}
-                  
-                  <Link 
-                    to="/features" 
-                    state={{ activeFeature: 'fire' }}
-                    className="text-xs font-bold text-slate-400 hover:text-indigo-500 flex items-center gap-1 ml-auto"
+                {!showAddSavingsInput ? (
+                  <button
+                    onClick={() => setShowAddSavingsInput(true)}
+                    className="ui-btn-secondary w-full sm:w-auto"
                   >
-                    Gunakan FIRE Calculator <ArrowRight className="w-3 h-3" />
-                  </Link>
-                </div>
+                    <Plus className="w-4 h-4" /> Tambah Tabungan
+                  </button>
+                ) : (
+                  <form onSubmit={handleAddSavings} className="flex gap-2">
+                    <input 
+                      type="number"
+                      placeholder="Nominal (Rp)"
+                      value={addSavingsAmount}
+                      onChange={(e) => setAddSavingsAmount(e.target.value)}
+                      className="ui-input flex-1"
+                      autoFocus
+                    />
+                    <button type="submit" className="ui-btn-primary">Simpan</button>
+                    <button type="button" onClick={() => setShowAddSavingsInput(false)} className="ui-btn-secondary">Batal</button>
+                  </form>
+                )}
               </div>
             ) : (
               <div className="text-center py-6">
-                <p className="text-xs text-slate-500 font-medium">Anda belum menentukan target impian.</p>
-                <button 
-                  onClick={() => setShowTargetModal(true)}
-                  className="mt-3 px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-lg"
-                >
-                  Buat Target Sekarang
+                <Target className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-600 mb-4">Belum ada target finansial yang dibuat.</p>
+                <button onClick={() => setShowTargetModal(true)} className="ui-btn-primary mx-auto">
+                  Buat Target Baru
                 </button>
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
 
-        {/* RIGHT COLUMN: Quests, Classroom Progress & Activities (4 Cols on large) */}
-        <div className="lg:col-span-4 space-y-6 sm:space-y-8">
-          
-          {/* Card 2.5: Daily & Weekly Quests */}
-          <motion.div variants={itemVariants}>
-            <QuestsWidget />
-          </motion.div>
+        {/* Sidebar/Right Column */}
+        <div className="space-y-6">
+          <QuestsWidget />
 
-          {/* Card 3: Progres Belajar (Learning Module Summary) */}
-          <motion.div 
-            variants={itemVariants}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden"
-          >
-            <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 font-mono">
-              Progres Kelas Literasi
-            </h4>
-
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-black text-slate-850 dark:text-slate-100">{completedCount} / {totalModules} Modul</p>
-                  <p className="text-[10px] text-slate-450 dark:text-slate-400 font-medium">Selesai dikerjakan ({progressPercent}%)</p>
-                </div>
-                <motion.div 
-                  whileHover={{ rotate: 15, scale: 1.1 }}
-                  className="p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/40 rounded-xl cursor-pointer"
-                >
-                  <Award className="w-6 h-6 text-teal-600 dark:text-teal-400" />
-                </motion.div>
+          <div className="ui-card">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">Progres Belajar</h3>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-2xl font-semibold text-slate-900 dark:text-white">{completedCount} / {totalModules}</p>
+                <p className="text-xs text-slate-500">Modul diselesaikan</p>
               </div>
-
-              {/* Progress bar */}
-              <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-850 rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full" 
-                ></motion.div>
+              <div className="p-3 bg-teal-50 dark:bg-teal-900/20 text-teal-600 rounded-xl">
+                <BookOpen className="w-6 h-6" />
               </div>
-
-              {/* Next suggested module */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-850/60 rounded-xl border border-slate-100 dark:border-slate-800/40">
-                <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">Lanjut Modul Rekomendasi</p>
-                <h5 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 mt-1">
-                  Atur Arus Kas (50/30/20)
-                </h5>
-                <p className="text-[10px] text-slate-500 mt-0.5">Saku bulanan hemat & anti tekor.</p>
-              </div>
-
-              <Link 
-                to="/belajar"
-                className="w-full py-3 bg-teal-600 hover:bg-teal-500 text-white font-black text-xs rounded-xl text-center block transition-all hover:shadow-md hover:shadow-teal-500/10 active:scale-95"
-              >
-                Masuk Ruang Belajar
-              </Link>
             </div>
-          </motion.div>
+            <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
+              <div style={{ width: `${progressPercent}%` }} className="h-full bg-teal-500 rounded-full"></div>
+            </div>
+            <Link to="/belajar" className="ui-btn-outline w-full justify-center">
+              Lanjut Belajar
+            </Link>
+          </div>
 
-          {/* Card 4: Aktivitas Terbaru (Recent Activity) */}
-          <motion.div 
-            variants={itemVariants}
-            whileHover={{ y: -4, transition: { duration: 0.2 } }}
-            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden"
-          >
-            <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 font-mono">
-              Aktivitas Terbaru
-            </h4>
-
+          <div className="ui-card">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4">Aktivitas Terakhir</h3>
             {activities.length > 0 ? (
               <div className="space-y-4">
-                {activities.map((act, i) => (
-                  <motion.div 
-                    key={act.id} 
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08, type: "spring", stiffness: 100 }}
-                    className="flex gap-3 text-xs items-start border-b border-slate-100/60 dark:border-slate-800/40 pb-3 last:border-0 last:pb-0"
-                  >
-                    <span className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                {activities.map((act) => (
+                  <div key={act.id} className="flex gap-3">
+                    <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
                       act.type === 'belajar' ? 'bg-teal-500' :
                       act.type === 'simulasi' ? 'bg-emerald-500' :
                       act.type === 'keuangan' ? 'bg-indigo-500' : 'bg-amber-500'
-                    }`}></span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-extrabold text-slate-850 dark:text-slate-200 leading-tight truncate">{act.title}</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">{act.desc}</p>
+                    }`} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{act.title}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{act.desc}</p>
                     </div>
-                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 shrink-0 uppercase font-mono">{act.timestamp}</span>
-                  </motion.div>
+                    <span className="text-xs text-slate-400 whitespace-nowrap">{act.timestamp}</span>
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <div className="text-3xl mb-1 select-none">📭</div>
-                <p className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider mb-1">Masa Depan Masih Bersih</p>
-                <p className="text-[10px] text-slate-500 leading-tight">
-                  Belum ada aktivitas terekam. Selesaikan modul kuis atau beli instrumen virtual di simulator sekarang!
-                </p>
-              </div>
+              <p className="text-sm text-slate-500 text-center py-4">Belum ada aktivitas.</p>
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
 
-      {/* MODAL: New Target / Ganti Target */}
-      <AnimatePresence>
-        {showTargetModal && (
-          <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4 z-50">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative"
-            >
-              <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                Rancang Target Finansial Baru
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
-                Pilih target hidupmu, atur nominal dana yang dibutuhkan, dan pantau progresnya.
-              </p>
+      {showTargetModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="ui-card w-full max-w-md">
+            <h3 className="ui-card-title mb-1">Target Finansial Baru</h3>
+            <p className="ui-card-sub mb-6">Tentukan impian finansial Anda.</p>
 
-              <form onSubmit={handleCreateTarget} className="space-y-4 mt-6">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">Kategori Impian</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {['Gadget', 'Liburan', 'Konser', 'Edukasi', 'Investasi'].map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setTargetCategory(cat)}
-                        className={`py-2 text-[11px] font-black rounded-lg border transition-all ${
-                          targetCategory === cat
-                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-xs'
-                            : 'bg-slate-50 dark:bg-slate-850 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">Nama Impian Anda</label>
-                  <input 
-                    type="text" 
-                    required
-                    placeholder="Contoh: Beli Laptop Spek AI"
-                    value={targetNameInput}
-                    onChange={(e) => setTargetNameInput(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">Target Dana (Rp)</label>
-                    <input 
-                      type="number" 
-                      required
-                      placeholder="Contoh: 15000000"
-                      value={targetAmountInput}
-                      onChange={(e) => setTargetAmountInput(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest font-mono">Sudah Terkumpul (Rp)</label>
-                    <input 
-                      type="number" 
-                      placeholder="Contoh: 500000"
-                      value={targetSavedInput}
-                      onChange={(e) => setTargetSavedInput(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4 flex gap-3">
-                  <button 
-                    type="submit"
-                    className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl shadow-md cursor-pointer transition-all"
-                  >
-                    Simpan Target
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setShowTargetModal(false)}
-                    className="px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl cursor-pointer"
-                  >
-                    Batal
-                  </button>
-                </div>
-              </form>
-            </motion.div>
+            <form onSubmit={handleCreateTarget} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Kategori</label>
+                <select 
+                  value={targetCategory}
+                  onChange={(e) => setTargetCategory(e.target.value)}
+                  className="ui-input w-full"
+                >
+                  {['Gadget', 'Liburan', 'Pendidikan', 'Investasi', 'Lainnya'].map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Target</label>
+                <input 
+                  type="text" required placeholder="Cth: Beli Laptop Baru"
+                  value={targetNameInput} onChange={(e) => setTargetNameInput(e.target.value)}
+                  className="ui-input w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Target Dana (Rp)</label>
+                <input 
+                  type="number" required placeholder="Cth: 15000000"
+                  value={targetAmountInput} onChange={(e) => setTargetAmountInput(e.target.value)}
+                  className="ui-input w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">Sudah Terkumpul (Rp)</label>
+                <input 
+                  type="number" placeholder="Cth: 5000000"
+                  value={targetSavedInput} onChange={(e) => setTargetSavedInput(e.target.value)}
+                  className="ui-input w-full"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button type="submit" className="ui-btn-primary flex-1">Simpan Target</button>
+                <button type="button" onClick={() => setShowTargetModal(false)} className="ui-btn-secondary">Batal</button>
+              </div>
+            </form>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
-      {/* Financial Profile Modal */}
-      <AnimatePresence>
-        {showProfileModal && (
-          <FinancialProfileModal
-            currentProfile={finProfile}
-            onSave={handleSaveProfile}
-            onClose={() => setShowProfileModal(false)}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
+      {showProfileModal && (
+        <FinancialProfileModal
+          currentProfile={finProfile}
+          onSave={handleSaveProfile}
+          onClose={() => setShowProfileModal(false)}
+        />
+      )}
+    </div>
   );
 }
+

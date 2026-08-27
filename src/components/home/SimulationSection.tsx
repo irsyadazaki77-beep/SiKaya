@@ -22,7 +22,7 @@ export function SimulationSection() {
         className="max-w-6xl mx-auto"
       >
         <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200/80 dark:border-slate-800/80 shadow-xl flex-1 flex flex-col justify-between transition-colors glow-card-teal">
+          <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex-1 flex flex-col justify-between transition-colors">
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                 <div>

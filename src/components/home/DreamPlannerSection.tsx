@@ -46,11 +46,11 @@ export function DreamPlannerSection() {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden grid md:grid-cols-12 glow-card-indigo transition-all">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden grid md:grid-cols-12 transition-all">
           {/* Planner Left Panel: Inputs */}
           <div className="p-6 sm:p-8 md:col-span-7 space-y-6">
             <div>
-              <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3.5 font-mono">Pilih Kategori Impianmu</h3>
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Pilih Kategori Impianmu</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {(Object.keys(goalPresets) as Array<keyof typeof goalPresets>).map((key) => {
                   const isSelected = goalPreset === key;
@@ -60,8 +60,8 @@ export function DreamPlannerSection() {
                       onClick={() => selectPreset(key)}
                       className={`px-3 py-2.5 text-xs font-bold rounded-xl transition-all text-left border relative overflow-hidden cursor-pointer ${
                         isSelected 
-                          ? 'bg-slate-950 dark:bg-white text-white dark:text-slate-950 border-slate-950 dark:border-white shadow-md' 
-                          : 'bg-slate-50 dark:bg-slate-850 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
+                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm' 
+                          : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
                       }`}
                     >
                       {key === 'gadget' && '📱 Gadget'}
@@ -72,8 +72,8 @@ export function DreamPlannerSection() {
                       
                       {isSelected && (
                         <motion.div 
-                          layoutId="presetGlow"
-                          className="absolute inset-0 bg-gradient-to-r from-teal-500/10 to-indigo-500/10 pointer-events-none"
+                          layoutId="presetSelection"
+                          className="absolute inset-0 bg-white/10 dark:bg-slate-900/10 pointer-events-none"
                           transition={{ type: "spring", stiffness: 300, damping: 30 }}
                         />
                       )}
@@ -153,50 +153,49 @@ export function DreamPlannerSection() {
           </div>
 
           {/* Planner Right Panel: Projections & Advice */}
-          <div className="p-6 sm:p-8 md:col-span-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-36 h-36 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="p-6 sm:p-8 md:col-span-5 bg-slate-900 dark:bg-slate-950 text-white flex flex-col justify-between relative overflow-hidden">
             
             <div className="space-y-6 relative z-10">
               <div>
-                <span className="text-[9px] font-black uppercase tracking-wider text-teal-300 bg-teal-400/15 px-2 py-0.5 rounded font-mono">PROYEKSI RENCANA</span>
-                <h4 className="text-xl font-extrabold mt-2 leading-snug font-display">{customGoalName || 'Impianmu'}</h4>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-teal-400 bg-teal-400/10 px-2 py-0.5 rounded">Proyeksi Rencana</span>
+                <h4 className="text-xl font-bold mt-3 leading-snug font-display">{customGoalName || 'Impianmu'}</h4>
               </div>
-
-              <div className="space-y-4">
-                <div className="border-l-3 border-teal-500 pl-3.5 py-0.5">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Cara 1: Tabungan Biasa (0% Bunga)</p>
-                  <p className="text-lg font-extrabold font-mono">Rp {monthlySavingsNeeded.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-400">/ bln</span></p>
+ 
+              <div className="space-y-5">
+                <div className="border-l-2 border-slate-700 pl-4 py-1">
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mb-1 block">Cara 1: Tabungan Biasa (0% Bunga)</p>
+                  <p className="text-lg font-bold">Rp {monthlySavingsNeeded.toLocaleString('id-ID')} <span className="text-sm font-normal text-slate-400">/ bln</span></p>
                 </div>
-
-                <div className="border-l-3 border-teal-400 pl-3.5 py-0.5">
-                  <p className="text-[10px] text-teal-350 font-bold uppercase tracking-wider font-mono">Cara 2: Investasi Pintar (~8% CAGR)</p>
-                  <p className="text-lg font-extrabold text-teal-350 font-mono">Rp {investingNeeded.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-400">/ bln</span></p>
+ 
+                <div className="border-l-2 border-teal-500 pl-4 py-1">
+                  <p className="text-[10px] text-teal-400 font-semibold uppercase tracking-widest mb-1 block">Cara 2: Investasi Pintar (~8% CAGR)</p>
+                  <p className="text-lg font-bold text-teal-400">Rp {investingNeeded.toLocaleString('id-ID')} <span className="text-sm font-normal text-slate-400">/ bln</span></p>
                 </div>
               </div>
-
+ 
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 key={moneySaved}
                 transition={{ type: "spring", stiffness: 120, damping: 15 }}
-                className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-1.5"
+                className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-2"
               >
-                <p className="text-[10px] font-black text-teal-350 flex items-center gap-1 uppercase tracking-wider font-mono">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-300 animate-pulse" /> SIKAYA SMART TIP
+                <p className="text-[10px] font-bold text-teal-400 flex items-center gap-1.5 uppercase tracking-widest">
+                  <Sparkles className="w-3.5 h-3.5 text-teal-400" /> Sikaya Smart Tip
                 </p>
-                <p className="text-xs font-medium leading-relaxed text-slate-200">
-                  Dengan berinvestasi secara disiplin, kamu menghemat sekitar <span className="text-teal-350 font-extrabold">Rp {moneySaved.toLocaleString('id-ID')}</span> karena uangmu bertumbuh secara otomatis!
+                <p className="text-sm font-medium leading-relaxed text-slate-300">
+                  Dengan berinvestasi secara disiplin, kamu menghemat sekitar <span className="text-teal-400 font-bold">Rp {moneySaved.toLocaleString('id-ID')}</span> karena uangmu bertumbuh secara otomatis!
                 </p>
               </motion.div>
             </div>
-
-            <div className="mt-8 pt-4 border-t border-white/10 flex items-center justify-between relative z-10">
+ 
+            <div className="mt-8 pt-5 border-t border-white/10 flex items-center justify-between relative z-10">
               <div>
-                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider font-mono">Pelajari Caranya di</p>
-                <p className="text-xs font-extrabold text-teal-350">Kelas Classroom</p>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mb-0.5">Pelajari Caranya di</p>
+                <p className="text-sm font-bold text-teal-400">Kelas Classroom</p>
               </div>
-              <Link to="/belajar" className="px-4 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl transition-all font-bold text-xs flex items-center gap-1 hover:shadow-lg hover:shadow-teal-500/20 active:scale-95 duration-200">
-                Mulai Belajar <ArrowRight className="w-3.5 h-3.5" />
+              <Link to="/belajar" className="px-5 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl transition-colors font-semibold text-sm flex items-center gap-1.5">
+                Mulai Belajar <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>

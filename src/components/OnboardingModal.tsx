@@ -72,24 +72,21 @@ export function OnboardingModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+      <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
+          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-xl relative overflow-hidden"
         >
-          {/* Ambient background blur */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 rounded-full blur-2xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
 
           {/* Progress Indicators */}
-          <div className="flex gap-1 mb-8 relative z-10">
+          <div className="flex gap-2 mb-8 relative z-10">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
-                className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                  i <= step ? 'bg-teal-500' : 'bg-slate-200 dark:bg-slate-800'
+                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                  i <= step ? 'bg-teal-600 dark:bg-teal-500' : 'bg-slate-100 dark:bg-slate-800'
                 }`}
               />
             ))}
@@ -132,7 +129,7 @@ export function OnboardingModal() {
 
                 <button
                   onClick={handleNext}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-teal-600 to-indigo-600 hover:from-teal-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 dark:bg-teal-600 dark:hover:bg-teal-500 text-white rounded-xl text-sm font-semibold transition-all shadow-sm cursor-pointer"
                 >
                   <span>Mulai Rencana Saya</span>
                   <ArrowRight className="w-4 h-4" />

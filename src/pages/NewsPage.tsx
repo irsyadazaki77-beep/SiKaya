@@ -217,25 +217,23 @@ export function NewsPage() {
         </div>
 
         {/* Sentiment Index Hero Gauge Banner */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl p-1 shadow-lg shadow-indigo-500/10">
-          <div className="bg-white dark:bg-slate-900 rounded-[22px] p-6 flex flex-col md:flex-row items-center gap-6">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0">
-              <BrainCircuit className="w-8 h-8 text-indigo-600 dark:text-indigo-450 animate-pulse" />
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-6">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0 border border-indigo-100 dark:border-indigo-800/50">
+            <BrainCircuit className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest">AI Sentiment Index</span>
+              <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase">Bullish Market</span>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest font-mono">AI Sentiment Index</span>
-                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold px-1.5 py-0.5 rounded-md">BULLISH MARKET</span>
-              </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-1 font-display">Suhu Sentimen IDX & Global Hari Ini</h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium">
-                Sektor perbankan dan teknologi nasional menunjukkan daya tahan yang luar biasa. Walaupun inflasi domestik meningkat tipis, sentimen global cenderung menenangkan para investor asing.
-              </p>
-            </div>
-            <div className="shrink-0 text-center px-6 py-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-150 dark:border-slate-850">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 font-mono">Skor Optimisme</p>
-              <p className="text-3xl font-black text-emerald-500 font-mono">78<span className="text-xs text-slate-400">/100</span></p>
-            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">Suhu Sentimen IDX & Global Hari Ini</h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl">
+              Sektor perbankan dan teknologi nasional menunjukkan daya tahan yang luar biasa. Walaupun inflasi domestik meningkat tipis, sentimen global cenderung menenangkan para investor asing.
+            </p>
+          </div>
+          <div className="shrink-0 text-center px-6 py-5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2">Skor Optimisme</p>
+            <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">78<span className="text-sm text-slate-400 font-medium">/100</span></p>
           </div>
         </div>
 
@@ -333,47 +331,47 @@ export function NewsPage() {
             </div>
 
             {/* Right Side: Detail Panel & Comments Drawer OR Market Simulator if empty */}
-            <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm space-y-6">
+            <div className="lg:col-span-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-sm space-y-6">
               
               {activeNewsId === null ? (
                 /* =======================================
                    MARKET REACTION SIMULATOR WIDGET (UPGRADED)
                    ======================================= */
                 <div className="space-y-6">
-                  <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="p-2 bg-amber-500/10 text-amber-500 rounded-lg">
-                        <BrainCircuit className="w-5 h-5 animate-spin" style={{ animationDuration: '4s' }} />
+                  <div className="border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-amber-50 dark:bg-amber-900/30 text-amber-500 rounded-xl border border-amber-100 dark:border-amber-800/50">
+                        <BrainCircuit className="w-5 h-5 animate-pulse" />
                       </div>
-                      <h3 className="text-base font-black text-slate-900 dark:text-white font-display">Simulator Reaksi Pasar ⚡</h3>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Simulator Reaksi Pasar</h3>
                     </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-450 font-semibold leading-relaxed">
-                      Pilih salah satu skenario berita makro di bawah untuk memproyeksikan reaksinya secara spasial terhadap instrumen aset utama!
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                      Pilih salah satu skenario berita makro di bawah untuk memproyeksikan reaksinya terhadap instrumen aset utama!
                     </p>
                   </div>
-
+  
                   {/* Skenarios Chips Selector */}
-                  <div className="space-y-2.5">
+                  <div className="space-y-3">
                     {marketScenarios.map((sc) => (
                       <button
                         key={sc.id}
                         type="button"
                         onClick={() => setActiveScenarioId(activeScenarioId === sc.id ? null : sc.id)}
-                        className={`w-full text-left p-3 rounded-2xl border transition-all text-xs font-bold cursor-pointer ${activeScenarioId === sc.id ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-950 dark:border-white shadow-md' : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-350 border-slate-200 dark:border-slate-850 hover:bg-slate-100'}`}
+                        className={`w-full text-left p-4 rounded-2xl border transition-all cursor-pointer ${activeScenarioId === sc.id ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white shadow-sm' : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900'}`}
                       >
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-extrabold truncate pr-2">{sc.title}</span>
-                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-md font-mono ${sc.color}`}>
+                        <div className="flex justify-between items-start mb-2 gap-2">
+                          <span className="font-semibold text-sm pr-2 leading-tight">{sc.title}</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shrink-0 ${activeScenarioId === sc.id ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900' : sc.color}`}>
                             {sc.sentiment}
                           </span>
                         </div>
-                        <p className={`text-[10px] leading-relaxed font-semibold line-clamp-1 ${activeScenarioId === sc.id ? 'text-slate-300 dark:text-slate-700' : 'text-slate-400'}`}>
+                        <p className={`text-xs leading-relaxed line-clamp-2 ${activeScenarioId === sc.id ? 'text-slate-300 dark:text-slate-600' : 'text-slate-500 dark:text-slate-400'}`}>
                           {sc.description}
                         </p>
                       </button>
                     ))}
                   </div>
-
+  
                   {/* Projection details board */}
                   <AnimatePresence mode="wait">
                     {activeScenarioId !== null ? (
@@ -382,27 +380,26 @@ export function NewsPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-150 dark:border-slate-850 space-y-4"
+                        className="p-5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-5"
                       >
                         {(() => {
                           const sc = marketScenarios.find(s => s.id === activeScenarioId)!;
                           return (
                             <>
                               <div>
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono">Dampak Skenario</span>
-                                <h4 className="font-extrabold text-slate-850 dark:text-white text-xs mt-0.5 mb-1.5">Penjelasan Mekanisme:</h4>
-                                <p className="text-[11px] text-slate-600 dark:text-slate-400 font-semibold leading-relaxed">
+                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-2 block">Penjelasan Mekanisme</span>
+                                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                                   {sc.description}
                                 </p>
                               </div>
-
-                              <div className="space-y-1.5">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest font-mono block mb-1">Dampak Instan Aset:</span>
-                                <div className="grid grid-cols-2 gap-2">
+  
+                              <div className="space-y-3">
+                                <span className="text-xs font-semibold text-slate-500 uppercase tracking-widest block">Dampak Instan Aset</span>
+                                <div className="grid grid-cols-2 gap-3">
                                   {sc.impacts.map((imp, idx) => (
-                                    <div key={idx} className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center font-mono">
-                                      <span className="text-[10px] font-extrabold text-slate-700 dark:text-slate-300">{imp.asset}</span>
-                                      <span className={`text-[10px] font-black flex items-center ${imp.up ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    <div key={idx} className="bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">{imp.asset}</span>
+                                      <span className={`text-sm font-bold flex items-center ${imp.up ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
                                         {imp.up ? '+' : ''}{imp.value}
                                       </span>
                                     </div>
@@ -414,10 +411,10 @@ export function NewsPage() {
                         })()}
                       </motion.div>
                     ) : (
-                      <div className="p-8 bg-slate-50/50 dark:bg-slate-950/20 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-center text-slate-450 space-y-1">
-                        <SlidersHorizontal className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">Belum Ada Skenario Terpilih</h4>
-                        <p className="text-[10px] text-slate-450 max-w-xs mx-auto">Ketuk salah satu skenario makro di atas untuk mempelajari bagaimana berita bursa berinteraksi dengan aset investasimu.</p>
+                      <div className="p-8 bg-slate-50 dark:bg-slate-950 border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-center text-slate-500 space-y-3">
+                        <SlidersHorizontal className="w-8 h-8 mx-auto text-slate-400" />
+                        <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum Ada Skenario Terpilih</h4>
+                        <p className="text-xs text-slate-500 max-w-[200px] mx-auto">Ketuk salah satu skenario makro di atas untuk memproyeksikan reaksi pasar.</p>
                       </div>
                     )}
                   </AnimatePresence>

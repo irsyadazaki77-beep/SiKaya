@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { BookOpen, AlertTriangle, ArrowRight } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-import { User } from '../../context/AuthContext';
+import { User } from '../../types/user';
+import { ClassroomModuleLayout } from './ClassroomModuleLayout';
 
 interface ModuleProps {
   user: User;
@@ -9,7 +10,7 @@ interface ModuleProps {
   completed: boolean;
 }
 
-export function CompoundModule({ user, onComplete, completed }: ModuleProps) {
+export function CompoundModule({ onComplete, completed }: ModuleProps) {
   const [monthlyInvest, setMonthlyInvest] = useState(500000); // Rp 500,000 / month
   const [annualRate, setAnnualRate] = useState(10); // 10% interest (average mutual fund index)
   
@@ -49,32 +50,18 @@ export function CompoundModule({ user, onComplete, completed }: ModuleProps) {
   const compoundInterestEarned = finalCompounded - finalSavings;
 
   return (
-    <div className="space-y-6">
-      <div className="border-b border-slate-100 dark:border-slate-850 pb-4">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className="px-2.5 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-black uppercase dark:bg-indigo-950/40 dark:text-indigo-400 dark:border-indigo-900">
-            Pertumbuhan Aset
-          </span>
-          {completed && (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-              ✓ Selesai (+100 XP)
-            </span>
-          )}
-        </div>
-        <h3 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white font-sans tracking-tight">
-          Keajaiban Bunga Majemuk (Compound Interest)
-        </h3>
-        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium mt-1 leading-relaxed">
-          Albert Einstein konon menyebut <em>Compound Interest</em> (bunga majemuk) sebagai keajaiban dunia ke-8. Konsepnya sederhana: hasil imbal balik (return) yang kamu dapatkan diinvestasikan kembali agar terus melipatgandakan nilai asetmu dari waktu ke waktu bagaikan bola salju.
+    <ClassroomModuleLayout
+      category="Pertumbuhan Aset"
+      title="Keajaiban Bunga Majemuk (Compound Interest)"
+      description="Albert Einstein konon menyebut Compound Interest (bunga majemuk) sebagai keajaiban dunia ke-8. Konsepnya sederhana: hasil imbal balik (return) yang kamu dapatkan diinvestasikan kembali agar terus melipatgandakan nilai asetmu dari waktu ke waktu bagaikan bola salju."
+      completed={completed}
+    >
+      {/* Anti-misleading alert note */}
+      <div className="bg-amber-50 border border-amber-200/50 p-3.5 rounded-xl text-xs text-amber-800 flex items-start gap-2.5 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-350">
+        <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-600" />
+        <p className="leading-relaxed">
+          <strong className="font-extrabold text-amber-950 dark:text-amber-200">⚠️ Catatan Transparan (Anti-Misleading):</strong> Di dunia investasi nyata (seperti saham atau reksa dana), return <strong>TIDAK PERNAH dijamin tetap atau linear</strong> setiap bulannya seperti diagram simulasi halus di bawah. Ada kalanya nilai pasar turun (fluktuasi negatif). Simulasi 10% per tahun di bawah adalah contoh rata-rata kinerja historis jangka panjang pasar modal, bukan kepastian return pasif yang konstan.
         </p>
-
-        {/* Anti-misleading alert note */}
-        <div className="bg-amber-50 border border-amber-200/50 p-3.5 rounded-xl text-xs text-amber-800 flex items-start gap-2.5 mt-3 dark:bg-amber-950/20 dark:border-amber-900/40 dark:text-amber-350">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 text-amber-600" />
-          <p className="leading-relaxed">
-            <strong className="font-extrabold text-amber-950 dark:text-amber-200">⚠️ Catatan Transparan (Anti-Misleading):</strong> Di dunia investasi nyata (seperti saham atau reksa dana), return <strong>TIDAK PERNAH dijamin tetap atau linear</strong> setiap bulannya seperti diagram simulasi halus di bawah. Ada kalanya nilai pasar turun (fluktuasi negatif). Simulasi 10% per tahun di bawah adalah contoh rata-rata kinerja historis jangka panjang pasar modal, bukan kepastian return pasif yang konstan.
-          </p>
-        </div>
       </div>
 
       {/* Sliders for compound simulator */}
@@ -170,6 +157,6 @@ export function CompoundModule({ user, onComplete, completed }: ModuleProps) {
           {completed ? 'Simpan & Lanjut Modul 4' : 'Selesaikan Modul & Ambil +100 XP'} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </ClassroomModuleLayout>
   );
 }

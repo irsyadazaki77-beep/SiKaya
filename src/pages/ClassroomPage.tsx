@@ -27,6 +27,7 @@ import { CareerModule } from '../components/classroom/CareerModule';
 import { PortfolioModule } from '../components/classroom/PortfolioModule';
 import { GLOSSARY_ITEMS } from '../data/glossary';
 import { featureLessons, LessonContent } from '../data/featureLessons';
+import { auth } from '../lib/firebase';
 
 const DAILY_QUIZ_QUESTIONS = [
   {
@@ -673,11 +674,31 @@ export function ClassroomPage() {
     setAiLoading(true);
 
     try {
+      let activeToken: string | null = null;
+      if (auth.currentUser) {
+        try {
+          activeToken = await auth.currentUser.getIdToken();
+        } catch {
+          // Token error
+        }
+      }
+
+      if (!activeToken) {
+        setChatLogs(prev => [
+          ...prev,
+          {
+            sender: 'ai',
+            text: '🔒 **Autentikasi Diperlukan:** Untuk keamanan dan perlindungan data, Anda perlu login menggunakan akun Google untuk berdiskusi dengan AI Tutor SiKaya. Silakan masuk melalui halaman login.'
+          }
+        ]);
+        return;
+      }
+
       const apiRes = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
+          'Authorization': `Bearer ${activeToken}`
         },
         body: JSON.stringify({ 
           profile: {
@@ -692,12 +713,15 @@ export function ClassroomPage() {
         })
       });
 
-      if (!apiRes.ok) throw new Error("Gagal terhubung dengan server tutor.");
+      if (!apiRes.ok) {
+        const errJson = await apiRes.json().catch(() => null);
+        throw new Error(errJson?.error?.message || "Gagal terhubung dengan server tutor.");
+      }
       const data = await apiRes.json();
       
       setChatLogs(prev => [...prev, { sender: 'ai', text: data.reply || "Maaf, silakan coba ajukan pertanyaan kembali." }]);
     } catch (e: any) {
-      setChatLogs(prev => [...prev, { sender: 'ai', text: `⚠️ Maaf, terjadi kesalahan koneksi. Pastikan server aktif atau coba sesaat lagi.\n\nDetail error: ${e.message}` }]);
+      setChatLogs(prev => [...prev, { sender: 'ai', text: `⚠️ ${e.message || 'Terjadi kendala saat menghubungi AI tutor. Silakan coba lagi.'}` }]);
     } finally {
       setAiLoading(false);
     }
@@ -1177,61 +1201,63 @@ export function ClassroomPage() {
               {/* Navigation Sidebar */}
               {!isFocusMode && (
                 <div className="lg:col-span-4 space-y-4">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-xs space-y-3">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-wider uppercase">Daftar Modul Belajar</h3>
-                      <span className="text-[9px] font-bold text-slate-400 font-mono">{filteredModules.length} Modul</span>
-                    </div>
-
-                    {/* Real-time Module Search Input */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Cari kata kunci modul..."
-                        value={moduleSearch}
-                        onChange={(e) => setModuleSearch(e.target.value)}
-                        className="w-full pl-9 pr-8 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-750 rounded-xl text-xs font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
-                      />
-                      {moduleSearch && (
-                        <button 
-                          onClick={() => setModuleSearch('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400 hover:text-slate-600 cursor-pointer bg-transparent border-none"
+                  <div className="ui-card p-0 overflow-hidden">
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Daftar Modul Belajar</h3>
+                        <span className="text-xs font-medium text-slate-500 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded-md">{filteredModules.length} Modul</span>
+                      </div>
+  
+                      {/* Real-time Module Search Input */}
+                      <div className="relative mb-3">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                          type="text"
+                          placeholder="Cari modul..."
+                          value={moduleSearch}
+                          onChange={(e) => setModuleSearch(e.target.value)}
+                          className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-teal-500 transition-all"
+                        />
+                        {moduleSearch && (
+                          <button 
+                            onClick={() => setModuleSearch('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 cursor-pointer bg-transparent border-none"
+                          >
+                            Tutup
+                          </button>
+                        )}
+                      </div>
+  
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowOnlyBookmarks(false)}
+                          className={`flex-1 text-center py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer border-solid ${
+                            !showOnlyBookmarks 
+                              ? 'bg-slate-900 text-white border-transparent shadow-sm dark:bg-slate-800' 
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50'
+                          }`}
                         >
-                          Clear
+                          Semua
                         </button>
-                      )}
+                        <button
+                          onClick={() => setShowOnlyBookmarks(true)}
+                          className={`flex-1 text-center py-2 rounded-lg text-xs font-semibold transition-all border cursor-pointer border-solid flex items-center justify-center gap-1.5 ${
+                            showOnlyBookmarks 
+                              ? 'bg-amber-50 text-amber-700 border-amber-200 shadow-sm dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-400' 
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 hover:bg-slate-50'
+                          }`}
+                        >
+                          <Bookmark className="w-3.5 h-3.5" /> Tersimpan
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setShowOnlyBookmarks(false)}
-                        className={`flex-1 text-center py-1.5 rounded-lg text-[9px] font-black tracking-wider transition-all border cursor-pointer border-solid ${
-                          !showOnlyBookmarks 
-                            ? 'bg-slate-900 text-white border-transparent shadow-xs dark:bg-slate-800' 
-                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 text-slate-500 hover:bg-slate-100'
-                        }`}
-                      >
-                        🌎 SEMUA
-                      </button>
-                      <button
-                        onClick={() => setShowOnlyBookmarks(true)}
-                        className={`flex-1 text-center py-1.5 rounded-lg text-[9px] font-black tracking-wider transition-all border cursor-pointer border-solid ${
-                          showOnlyBookmarks 
-                            ? 'bg-amber-600 text-white border-transparent shadow-xs' 
-                            : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-850 text-slate-500 hover:bg-slate-100'
-                        }`}
-                      >
-                        ⭐ BOOKMARK ({bookmarkedModules.length})
-                      </button>
-                    </div>
-
-                    <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1 scrollbar-thin">
+                    <div className="max-h-[480px] overflow-y-auto scrollbar-thin divide-y divide-slate-100 dark:divide-slate-800">
                       {filteredModules.length === 0 ? (
-                        <div className="py-10 text-center text-slate-400 space-y-2">
-                          <HelpCircle className="w-8 h-8 mx-auto text-slate-350" />
-                          <p className="text-xs font-bold">Modul tidak ditemukan</p>
-                          <p className="text-[10px] max-w-[200px] mx-auto text-slate-450">Coba kata kunci lain atau nonaktifkan filter bookmark.</p>
+                        <div className="py-12 text-center text-slate-500 space-y-2">
+                          <HelpCircle className="w-8 h-8 mx-auto text-slate-300" />
+                          <p className="text-sm font-semibold">Modul tidak ditemukan</p>
+                          <p className="text-xs max-w-[200px] mx-auto text-slate-400">Coba kata kunci lain atau nonaktifkan filter bookmark.</p>
                         </div>
                       ) : (
                         filteredModules.map((mod) => {
@@ -1239,27 +1265,25 @@ export function ClassroomPage() {
                           const isCompleted = user.completedModules.includes(mod.id);
                           const isActive = activeModuleId === mod.id;
                           return (
-                            <motion.button
-                              whileHover={{ scale: 1.01 }}
-                              whileTap={{ scale: 0.99 }}
+                            <button
                               key={mod.id}
                               onClick={() => setActiveModuleId(mod.id)}
-                              className={`w-full p-2.5 rounded-xl border text-left transition-all flex items-start gap-2.5 relative overflow-hidden cursor-pointer border-solid ${
+                              className={`w-full p-4 text-left transition-all flex items-start gap-3 relative cursor-pointer border-none bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
                                 isActive
-                                  ? 'bg-teal-50/60 dark:bg-teal-950/30 border-teal-500 shadow-xs ring-1 ring-teal-500/30'
-                                  : 'bg-white dark:bg-slate-900 border-slate-150 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+                                  ? 'bg-teal-50/50 dark:bg-teal-900/20'
+                                  : ''
                               }`}
                             >
-                              <div className={`p-1.5 rounded-lg shrink-0 ${isCompleted ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <IconComponent className="w-3.5 h-3.5" />}
+                              {isActive && <div className="absolute left-0 top-0 bottom-0 w-1 bg-teal-500" />}
+                              <div className={`p-2 rounded-xl shrink-0 ${isCompleted ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                {isCompleted ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <IconComponent className="w-4 h-4" />}
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Modul {mod.num} • {mod.tag}</p>
-                                <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-100 mt-0.5 truncate">{mod.title}</h4>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">{mod.desc}</p>
+                              <div className="flex-1 min-w-0 pt-0.5">
+                                <p className="text-xs font-medium text-slate-500 mb-0.5">Modul {mod.num} • {mod.tag}</p>
+                                <h4 className={`text-sm font-semibold truncate ${isActive ? 'text-teal-700 dark:text-teal-400' : 'text-slate-900 dark:text-slate-100'}`}>{mod.title}</h4>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-1">{mod.desc}</p>
                               </div>
-                              <ChevronRight className={`w-3.5 h-3.5 self-center ${isActive ? 'text-teal-500' : 'text-slate-300'}`} />
-                            </motion.button>
+                            </button>
                           );
                         })
                       )}
@@ -1278,27 +1302,27 @@ export function ClassroomPage() {
               )}
 
               {/* Workspace Area */}
-              <div className={`${isFocusMode ? 'col-span-full' : 'lg:col-span-8'} bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 sm:p-7 shadow-xs transition-all`}>
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className={`${isFocusMode ? 'col-span-full' : 'lg:col-span-8'} ui-card p-6 sm:p-8 transition-all`}>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pb-6 border-b border-slate-100 dark:border-slate-800">
                   <div>
-                    <span className="text-[8px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest bg-teal-50 dark:bg-teal-950/40 px-2 py-0.5 rounded border border-teal-100 dark:border-teal-900/50">
-                      INTERAKTIF MODULE WORKSPACE
+                    <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 uppercase tracking-widest bg-teal-50 dark:bg-teal-900/30 px-3 py-1 rounded-md">
+                      Modul Pembelajaran
                     </span>
-                    <h2 className="text-lg sm:text-xl font-black text-slate-850 dark:text-slate-100 mt-1">
-                      {activeModuleId === 'budgeting' && 'Modul 1: Aturan 50/30/20'}
-                      {activeModuleId === 'debt' && 'Modul 2: Kelola Utang & Anti-Pinjol'}
-                      {activeModuleId === 'compound' && 'Modul 3: Keajaiban Bunga Majemuk'}
-                      {activeModuleId === 'investing' && 'Modul 4: Profil Risiko & Alokasi Aset'}
-                      {activeModuleId === 'emergency' && 'Modul 5: Dana Darurat & Uji Stres'}
-                      {activeModuleId === 'crypto' && 'Modul 6: Kripto & Web3 Aman'}
-                      {activeModuleId === 'reksadana' && 'Modul 7: Reksa Dana & SBN'}
-                      {activeModuleId === 'saham' && 'Modul 8: Analisis Pasar Saham'}
-                      {activeModuleId === 'career' && 'Modul 9: Peta Jalan Karir & Income'}
-                      {activeModuleId === 'portfolio' && 'Modul 10: Rebalancing Portofolio'}
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-3">
+                      {activeModuleId === 'budgeting' && 'Aturan 50/30/20'}
+                      {activeModuleId === 'debt' && 'Kelola Utang & Anti-Pinjol'}
+                      {activeModuleId === 'compound' && 'Keajaiban Bunga Majemuk'}
+                      {activeModuleId === 'investing' && 'Profil Risiko & Alokasi Aset'}
+                      {activeModuleId === 'emergency' && 'Dana Darurat & Uji Stres'}
+                      {activeModuleId === 'crypto' && 'Kripto & Web3 Aman'}
+                      {activeModuleId === 'reksadana' && 'Reksa Dana & SBN'}
+                      {activeModuleId === 'saham' && 'Analisis Pasar Saham'}
+                      {activeModuleId === 'career' && 'Peta Jalan Karir & Income'}
+                      {activeModuleId === 'portfolio' && 'Rebalancing Portofolio'}
                     </h2>
                   </div>
-
-                  <div className="flex items-center gap-2">
+  
+                  <div className="flex items-center gap-2 self-end sm:self-center">
                     {/* Audio TTS Ringkasan Modul */}
                     <button
                       onClick={() => {
@@ -1306,31 +1330,31 @@ export function ClassroomPage() {
                         const text = currentMod ? `${currentMod.title}. ${currentMod.desc}. Kategori: ${currentMod.tag}.` : 'Modul Pembelajaran Keuangan SiKaya.';
                         handleToggleAudioSummary(text);
                       }}
-                      className={`px-3 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer border-none ${
+                      className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer border border-slate-200 dark:border-slate-800 ${
                         isSpeakingAudio 
-                          ? 'bg-teal-600 text-white animate-pulse shadow-xs' 
-                          : 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 hover:bg-teal-100'
+                          ? 'bg-teal-600 text-white border-teal-600 animate-pulse' 
+                          : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                       }`}
                       title="Dengarkan Ringkasan Modul lewat Audio Suara"
                     >
                       {isSpeakingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                      <span className="hidden sm:inline">{isSpeakingAudio ? 'Hentikan Audio' : 'Audio Modul'}</span>
+                      <span className="hidden sm:inline">{isSpeakingAudio ? 'Hentikan Audio' : 'Dengarkan Topik'}</span>
                     </button>
-
+  
                     <button
                       onClick={(e) => toggleBookmark(activeModuleId, e)}
-                      className={`p-2 rounded-xl transition-all border-none cursor-pointer ${bookmarkedModules.includes(activeModuleId) ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200'}`}
+                      className={`p-2.5 rounded-xl transition-all border cursor-pointer ${bookmarkedModules.includes(activeModuleId) ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-400' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:bg-slate-50'}`}
                       title={bookmarkedModules.includes(activeModuleId) ? 'Hapus Bookmark' : 'Bookmark Materi'}
                     >
-                      <Bookmark className="w-4 h-4" fill={bookmarkedModules.includes(activeModuleId) ? 'currentColor' : 'none'} />
+                      <Bookmark className="w-5 h-5" fill={bookmarkedModules.includes(activeModuleId) ? 'currentColor' : 'none'} />
                     </button>
-
+  
                     <button
                       onClick={() => setIsFocusMode(!isFocusMode)}
-                      className="p-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl hover:bg-slate-200 transition-all border-none cursor-pointer"
+                      className="p-2.5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
                       title={isFocusMode ? 'Keluar Mode Belajar' : 'Mode Belajar (Fokus)'}
                     >
-                      {isFocusMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                      {isFocusMode ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>

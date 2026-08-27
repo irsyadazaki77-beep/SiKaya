@@ -5,7 +5,7 @@ import {
   Search, ArrowUpRight, ArrowDownRight, RefreshCw, BarChart3, 
   Info, History, CheckCircle2, AlertCircle, Sparkles, Globe,
   Play, Pause, FastForward, Award, PieChart as PieIcon, Landmark,
-  BookOpen, UserCheck, HelpCircle, Download, RotateCcw, Flame, Check, X
+  BookOpen, UserCheck, HelpCircle, Download, RotateCcw, Flame, Check, X, ShieldAlert
 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Line, Legend, PieChart, Pie, Cell } from 'recharts';
@@ -13,7 +13,7 @@ import { TradingViewChart } from '../components/TradingViewChart';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { db, auth } from '../lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, limit } from 'firebase/firestore';
 
 interface Asset {
   symbol: string;
@@ -254,6 +254,21 @@ export function SimulationPage() {
   // API loading & error states
   const [apiLoading, setApiLoading] = useState<boolean>(true);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [marketMeta, setMarketMeta] = useState<{
+    source: string;
+    lastUpdated: string | null;
+    isRealtime: boolean;
+    isStale: boolean;
+    isSimulated: boolean;
+    status: string;
+  }>({
+    source: 'Yahoo Finance',
+    lastUpdated: null,
+    isRealtime: false,
+    isStale: false,
+    isSimulated: false,
+    status: 'loading'
+  });
   
   const [cashIDR, setCashIDR] = useState<number>(100000000); // Rp 100 Juta
   const [cashUSD, setCashUSD] = useState<number>(10000); // $10,000
@@ -295,7 +310,8 @@ export function SimulationPage() {
         try {
           const q = query(
             collection(db, 'investmentHistory'),
-            where('userId', '==', auth.currentUser.uid)
+            where('userId', '==', auth.currentUser.uid),
+            limit(50)
           );
           const querySnapshot = await getDocs(q);
           txs = querySnapshot.docs.map(doc => {
@@ -537,15 +553,39 @@ export function SimulationPage() {
       if (simSpeed === 'PAUSED') return;
       try {
         const res = await fetch('/api/stock-prices');
-        if (!res.ok) throw new Error('Failed to fetch real quotes');
+        if (!res.ok) throw new Error('Data pasar sementara tidak tersedia.');
         const json = await res.json();
-        const results = json?.quoteResponse?.result;
-        if (!results || !Array.isArray(results)) {
-          throw new Error('Format data tidak valid');
+        
+        const isUnavailable = json.status === 'unavailable' || !json?.quoteResponse?.result || json.quoteResponse.result.length === 0;
+
+        if (isUnavailable) {
+          if (isMounted) {
+            setApiError("Data pasar sementara tidak tersedia.");
+            setMarketMeta({
+              source: json?.source || 'Yahoo Finance',
+              lastUpdated: json?.lastUpdated || null,
+              isRealtime: false,
+              isStale: true,
+              isSimulated: false,
+              status: 'unavailable'
+            });
+          }
+          return;
         }
+
+        const results = json.quoteResponse.result;
 
         if (isMounted) {
           setApiError(null);
+          setMarketMeta({
+            source: json?.source || 'Yahoo Finance',
+            lastUpdated: json?.lastUpdated || new Date().toISOString(),
+            isRealtime: Boolean(json?.isRealtime),
+            isStale: Boolean(json?.isStale),
+            isSimulated: Boolean(json?.isSimulated),
+            status: json?.status || 'ok'
+          });
+
           setAssets(prev => prev.map(asset => {
             const yahooSym = symbolMapping[asset.symbol];
             if (!yahooSym) return asset;
@@ -601,26 +641,17 @@ export function SimulationPage() {
           }));
         }
       } catch (err: any) {
-        console.warn("Failed fetching real stock prices, falling back to simulation:", err.message);
+        console.warn("Market API fetch error:", err.message);
         if (isMounted) {
-          setApiError("Gagal memuat harga bursa waktu-nyata. Menggunakan simulasi lokal.");
-          // Fallback: update using basic stock price fluctuations
-          setAssets(prev => prev.map(asset => {
-            const volatility = asset.market === 'CRYPTO' ? 0.04 : asset.market === 'COMMODITY' ? 0.012 : 0.015;
-            const fluct = (Math.random() * 2 - 1) * volatility;
-            const nextPrice = Number((asset.price * (1 + fluct)).toFixed(asset.market === 'IDX' ? 0 : 2));
-            const nextChange = Number((((nextPrice - asset.prevClose) / asset.prevClose) * 100).toFixed(2));
-            
-            const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const nextChart = [...asset.chartData.slice(1), { time: timeStr, value: nextPrice }];
-
-            return {
-              ...asset,
-              price: nextPrice,
-              change: nextChange,
-              chartData: nextChart
-            };
-          }));
+          setApiError("Data pasar sementara tidak tersedia.");
+          setMarketMeta({
+            source: 'Yahoo Finance',
+            lastUpdated: null,
+            isRealtime: false,
+            isStale: true,
+            isSimulated: false,
+            status: 'unavailable'
+          });
         }
       } finally {
         if (isMounted) {
@@ -821,14 +852,20 @@ export function SimulationPage() {
 
     const sharesNum = Number(orderShares);
     if (isNaN(sharesNum) || sharesNum <= 0) {
-      setOrderFeedback({ type: 'error', text: 'Masukkan jumlah lembar saham yang valid.' });
-      toast.error('Masukkan jumlah lembar saham yang valid.');
+      setOrderFeedback({ type: 'error', text: 'Masukkan jumlah unit aset yang valid (harus lebih dari 0).' });
+      toast.error('Masukkan jumlah unit aset yang valid (harus lebih dari 0).');
       return;
     }
 
     const price = selectedAsset.price;
     const market = selectedAsset.market;
     const symbol = selectedAsset.symbol;
+
+    if (isNaN(price) || price < 0) {
+      setOrderFeedback({ type: 'error', text: 'Harga aset tidak valid.' });
+      toast.error('Harga aset tidak valid.');
+      return;
+    }
 
     if (orderMethod !== 'INSTAN') {
       const target = Number(targetPrice);
@@ -850,7 +887,7 @@ export function SimulationPage() {
       return;
     }
 
-    const totalCost = sharesNum * price;
+    const totalCost = Number((sharesNum * price).toFixed(2));
     if (orderType === 'BELI') {
       if (market === 'IDX') {
         if (cashIDR < totalCost) {
@@ -893,15 +930,21 @@ export function SimulationPage() {
       toast.success(`Sukses membeli ${sharesNum} unit ${symbol}!`);
 
       if (token && token !== 'demo-token' && auth.currentUser) {
-        addDoc(collection(db, 'investmentHistory'), {
-          userId: auth.currentUser.uid,
-          symbol,
-          type: "BELI",
-          shares: sharesNum,
-          price,
-          total: totalCost,
-          createdAt: new Date().toISOString()
-        }).catch(err => console.error("Error logging transaction to Firestore:", err));
+        auth.currentUser.getIdToken().then(idToken => {
+          fetch('/api/user/transactions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              symbol,
+              type: "BELI",
+              shares: sharesNum,
+              price: price
+            })
+          }).catch(err => console.error("Error logging transaction via API:", err));
+        });
       } else {
         const savedVirtual = localStorage.getItem('sikaya_virtual_investments') || '[]';
         const virtualHistory = JSON.parse(savedVirtual);
@@ -954,15 +997,21 @@ export function SimulationPage() {
       toast.success(`Sukses menjual ${sharesNum} unit ${symbol}!`);
 
       if (token && token !== 'demo-token' && auth.currentUser) {
-        addDoc(collection(db, 'investmentHistory'), {
-          userId: auth.currentUser.uid,
-          symbol,
-          type: "JUAL",
-          shares: sharesNum,
-          price,
-          total: totalCost,
-          createdAt: new Date().toISOString()
-        }).catch(err => console.error("Error logging transaction to Firestore:", err));
+        auth.currentUser.getIdToken().then(idToken => {
+          fetch('/api/user/transactions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({
+              symbol,
+              type: "JUAL",
+              shares: sharesNum,
+              price: price
+            })
+          }).catch(err => console.error("Error logging transaction via API:", err));
+        });
       } else {
         const savedVirtual = localStorage.getItem('sikaya_virtual_investments') || '[]';
         const virtualHistory = JSON.parse(savedVirtual);
@@ -1259,16 +1308,38 @@ export function SimulationPage() {
               ))}
             </div>
 
-            {/* API Status Notice */}
-            {apiError && (
-              <div className="bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/50 dark:border-amber-900/30 rounded-xl p-3 flex items-start gap-2.5 text-amber-800 dark:text-amber-400">
-                <Info className="w-4 h-4 text-amber-500 shrink-0 mt-0.5 animate-bounce" />
+            {/* API Status & Integrity Notice */}
+            {marketMeta.status === 'unavailable' && (
+              <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-xl p-3 flex items-start gap-2.5 text-rose-800 dark:text-rose-300">
+                <Info className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                 <div>
-                  <h5 className="text-[9px] font-extrabold uppercase tracking-wider font-mono">Bursa API Offline</h5>
+                  <h5 className="text-[9px] font-extrabold uppercase tracking-wider font-mono">Data Pasar Sementara Tidak Tersedia</h5>
                   <p className="text-[8px] font-medium leading-relaxed">
-                    Sedang menggunakan database harga simulasi lokal. Seluruh transaksi virtual berjalan normal.
+                    Penyedia data bursa (Yahoo Finance) sedang tidak merespons. Angka harga dibekukan demi menjaga integritas data finansial.
                   </p>
                 </div>
+              </div>
+            )}
+
+            {marketMeta.status === 'simulated' && (
+              <div className="bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl p-2.5 flex items-center justify-between text-amber-800 dark:text-amber-300 text-[10px]">
+                <div className="flex items-center gap-1.5 font-bold font-mono">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                  <span>SIMULATED DATA (Mock Mode)</span>
+                </div>
+                <span className="text-[8px] opacity-75 font-mono">Simulasi Edukasi</span>
+              </div>
+            )}
+
+            {marketMeta.status === 'ok' && marketMeta.lastUpdated && (
+              <div className="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/30 rounded-xl px-3 py-1.5 flex items-center justify-between text-emerald-800 dark:text-emerald-300 text-[9px]">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  <span>Live Feed ({marketMeta.source})</span>
+                </div>
+                <span className="text-[8px] opacity-75 font-mono">
+                  {new Date(marketMeta.lastUpdated).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} WIB
+                </span>
               </div>
             )}
 
@@ -1964,6 +2035,16 @@ export function SimulationPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Financial Disclaimer Banner */}
+      <div className="mt-8 p-4 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-3 text-slate-500 dark:text-slate-400 text-xs">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+          <span>
+            <strong>Disclaimer Keuangan:</strong> Seluruh transaksi dalam simulator ini bersifat virtual untuk tujuan edukasi dan pelatihan literasi finansial. SiKaya tidak memfasilitasi transaksi uang riil maupun menyediakan penasihat investasi berlisensi OJK.
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

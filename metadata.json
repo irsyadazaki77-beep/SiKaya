@@ -1,0 +1,8 @@
+{
+  "name": "SiKaya",
+  "description": "Platform edukasi finansial, simulasi investasi, dan konsultan AI terdepan untuk Gen Z.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

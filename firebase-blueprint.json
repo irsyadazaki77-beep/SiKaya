@@ -1,0 +1,74 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "description": "Stores user profiles and stats",
+      "rules": [
+        {
+          "allow": ["read", "write"],
+          "condition": "request.auth != null && request.auth.uid == resource.id"
+        }
+      ],
+      "fields": [
+        { "name": "uid", "type": "string" },
+        { "name": "email", "type": "string" },
+        { "name": "xp", "type": "number" },
+        { "name": "fullName", "type": "string" },
+        { "name": "avatar", "type": "string" },
+        { "name": "literacyLevel", "type": "string" },
+        { "name": "createdAt", "type": "string" }
+      ]
+    },
+    {
+      "name": "chatHistory",
+      "description": "Stores AI advisor chat history for users",
+      "rules": [
+        {
+          "allow": ["read", "write"],
+          "condition": "request.auth != null && request.auth.uid == resource.data.userId"
+        }
+      ],
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "role", "type": "string" },
+        { "name": "content", "type": "string" },
+        { "name": "createdAt", "type": "string" }
+      ]
+    },
+    {
+      "name": "investmentHistory",
+      "description": "Stores user simulation investment transactions",
+      "rules": [
+        {
+          "allow": ["read", "write"],
+          "condition": "request.auth != null && request.auth.uid == resource.data.userId"
+        }
+      ],
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "symbol", "type": "string" },
+        { "name": "type", "type": "string" },
+        { "name": "shares", "type": "number" },
+        { "name": "price", "type": "number" },
+        { "name": "total", "type": "number" },
+        { "name": "createdAt", "type": "string" }
+      ]
+    },
+    {
+      "name": "learningProgress",
+      "description": "Stores user progress for classroom modules",
+      "rules": [
+        {
+          "allow": ["read", "write"],
+          "condition": "request.auth != null && request.auth.uid == resource.data.userId"
+        }
+      ],
+      "fields": [
+        { "name": "userId", "type": "string" },
+        { "name": "moduleId", "type": "string" },
+        { "name": "status", "type": "string" },
+        { "name": "completedAt", "type": "string" }
+      ]
+    }
+  ]
+}

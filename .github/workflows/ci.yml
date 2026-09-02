@@ -11,21 +11,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
     - name: Use Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
     
-    - name: Install dependencies
+    - name: Install Dependencies
       run: npm ci
 
-    - name: Typecheck
+    - name: Typecheck & Lint
       run: npm run lint
 
-    - name: Unit Tests
-      run: npx vitest run
+    - name: Unit & Integration Tests
+      run: npm run test
 
-    - name: Build
+    - name: Build Application
       run: npm run build
+
+    - name: Install Playwright Browsers & OS Dependencies
+      run: npx playwright install --with-deps
+
+    - name: Run E2E Tests
+      run: npm run test:e2e

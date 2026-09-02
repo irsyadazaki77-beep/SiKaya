@@ -6,7 +6,7 @@ import type { Request, Response } from 'express';
  */
 export const generalApiLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 300 requests per 15 mins
+  max: process.env.NODE_ENV === 'production' ? 300 : 99999, // Limit each IP to 300 requests in production, relax in dev
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: {
@@ -27,7 +27,7 @@ export const generalApiLimiter: RateLimitRequestHandler = rateLimit({
  */
 export const aiChatLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // Limit each user / IP to 30 AI prompts per 15 mins
+  max: process.env.NODE_ENV === 'production' ? 30 : 9999, // Limit each user / IP to 30 AI prompts in production, relax in dev
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   keyGenerator: (req: Request): string => {
@@ -54,7 +54,7 @@ export const aiChatLimiter: RateLimitRequestHandler = rateLimit({
  */
 export const authLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Max 20 attempts per 15 mins
+  max: process.env.NODE_ENV === 'production' ? 20 : 9999, // Max 20 attempts in production, relax in dev
   standardHeaders: 'draft-7',
   legacyHeaders: false,
   message: {

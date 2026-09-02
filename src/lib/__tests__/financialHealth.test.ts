@@ -99,4 +99,38 @@ describe('calculateFinancialHealthScore', () => {
     expect(result.ratios.savingsRate.value).toBe(80); // (1e12 - 2e11) / 1e12 * 100 = 80
     expect(result.overallScore).toBeGreaterThan(80);
   });
+
+  it('should calculate score correctly for stable Grade B', () => {
+    const profile: FinancialProfile = {
+      monthlyIncome: 10000000,
+      monthlyExpenses: 7000000, // 30% savings rate
+      emergencyFund: 15000000, // 3 months (instead of 6)
+      monthlyDebtPayment: 2500000, // 25% DTI
+      totalInvestments: 5000000,
+      totalCash: 5000000,
+      totalDebt: 10000000,
+      riskTolerance: 'Moderat',
+      goals: []
+    };
+    const result = calculateFinancialHealthScore(profile);
+    expect(result.grade).toBe('B');
+    expect(result.statusLabel).toBe('Stabil (Cukup Baik)');
+  });
+
+  it('should calculate score correctly for alert Grade C', () => {
+    const profile: FinancialProfile = {
+      monthlyIncome: 10000000,
+      monthlyExpenses: 9000000, // 10% savings rate
+      emergencyFund: 5000000, // < 1 month
+      monthlyDebtPayment: 4000000, // 40% DTI
+      totalInvestments: 1000000,
+      totalCash: 2000000,
+      totalDebt: 30000000,
+      riskTolerance: 'Moderat',
+      goals: []
+    };
+    const result = calculateFinancialHealthScore(profile);
+    expect(result.grade).toBe('C');
+    expect(result.statusLabel).toBe('Waspada (Perlu Perbaikan)');
+  });
 });

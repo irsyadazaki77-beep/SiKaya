@@ -1,4 +1,4 @@
-export type AssetType = 'Saham' | 'Reksa Dana' | 'Kripto' | 'Emas' | 'Kas & Deposito' | 'Lainnya';
+export type AssetType = 'Saham' | 'Reksa Dana' | 'Kripto' | 'Emas' | 'Kas & Deposito' | 'SBN / Obligasi' | 'Properti' | 'Lainnya';
 
 export interface ManualAsset {
   id: string;
@@ -8,6 +8,28 @@ export interface ManualAsset {
   buyPrice: number;
   currentPrice: number;
   shares: number;
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface BudgetEnvelope {
+  id: string;
+  category: 'Makan & Minum' | 'Transportasi' | 'Tempat Tinggal' | 'Pendidikan & Skill' | 'Hiburan & Lifestyle' | 'Tagihan & Utilitas' | 'Kesehatan' | 'Investasi & Tabungan' | 'Lainnya';
+  monthlyBudget: number;
+  spent: number;
+  color?: string;
+  icon?: string;
+}
+
+export interface FinancialGoal {
+  id: string;
+  name: string;
+  category: 'Dana Darurat' | 'Gadget / Laptop' | 'Kendaraan' | 'Rumah' | 'Pernikahan' | 'Pendidikan' | 'Liburan' | 'Investasi' | 'Pensiun' | 'Custom';
+  targetAmount: number;
+  currentSaved: number;
+  targetDate: string; // ISO date string (YYYY-MM-DD)
+  monthlyContribution: number;
+  isCompleted?: boolean;
 }
 
 export interface FinancialProfile {
@@ -19,17 +41,28 @@ export interface FinancialProfile {
   monthlyDebtPayment: number;
   totalInvestments: number;
   riskTolerance: 'Konservatif' | 'Moderat' | 'Agresif';
+  persona?: {
+    condition: 'Mahasiswa' | 'Pekerja Baru' | 'Profesional' | 'Freelancer / Wirausaha';
+    primaryGoal: 'darurat' | 'utang' | 'investasi' | 'rumah' | 'budgeting' | 'pensiun' | 'pendidikan';
+    knowledgeLevel: 'Beginner' | 'Intermediate' | 'Advanced';
+  };
   goals: string[];
+  financialGoals?: FinancialGoal[];
+  budgetEnvelopes?: BudgetEnvelope[];
 }
 
 export interface FinancialHealthRatio {
   name: string;
+  pillar: 'cashflow' | 'emergency' | 'debt' | 'savings' | 'investment';
   value: number;
   target: string;
   formattedValue: string;
-  score: number; // 0-100
+  scoreOutOf20: number; // 0 - 20
+  score: number; // 0 - 100 equivalent
   status: 'A' | 'B' | 'C' | 'D' | 'F';
-  advice: string;
+  whyThisScore: string;
+  howToImprove: string;
+  relatedModuleId?: string;
 }
 
 export interface FinancialHealthScoreResult {
@@ -37,13 +70,19 @@ export interface FinancialHealthScoreResult {
   grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
   statusLabel: string;
   summary: string;
-  ratios: {
-    emergencyFundRatio: FinancialHealthRatio;
+  pillars: {
+    cashflow: FinancialHealthRatio;
+    emergencyFund: FinancialHealthRatio;
+    debtRatio: FinancialHealthRatio;
     savingsRate: FinancialHealthRatio;
-    debtToIncomeRatio: FinancialHealthRatio;
-    investmentRatio: FinancialHealthRatio;
+    investmentAllocation: FinancialHealthRatio;
   };
-  recommendations: string[];
+  recommendations: {
+    title: string;
+    description: string;
+    moduleId?: string;
+    priority: 'high' | 'medium' | 'low';
+  }[];
 }
 
 export interface Quest {
@@ -52,9 +91,11 @@ export interface Quest {
   description: string;
   type: 'daily' | 'weekly';
   xpReward: number;
-  progress: number; // e.g. 1
-  target: number; // e.g. 1
+  coinReward?: number;
+  progress: number;
+  target: number;
   completed: boolean;
+  claimed?: boolean;
   category: 'literacy' | 'budgeting' | 'investment' | 'simulation';
 }
 
@@ -67,13 +108,28 @@ export interface TradeOrder {
   price: number;
   targetPrice?: number;
   shares: number;
-  leverage: number; // 1x, 2x, 5x, 10x
-  stopLoss?: number;
-  takeProfit?: number;
   fee: number;
   totalAmount: number;
   timestamp: string;
   status: 'EXECUTED' | 'PENDING' | 'CANCELLED';
+  journalThesis?: string;
+  journalRisk?: string;
+  journalTarget?: string;
+}
+
+export interface TradingJournalEntry {
+  id: string;
+  tradeId: string;
+  symbol: string;
+  name: string;
+  type: 'BUY' | 'SELL';
+  date: string;
+  buyPrice: number;
+  shares: number;
+  thesis: string;
+  riskPlan: string;
+  targetPrice: number;
+  reviewDecision?: string;
 }
 
 export interface LifeSimulatorState {
@@ -86,7 +142,15 @@ export interface LifeSimulatorState {
   totalDebt: number;
   careerPath: string;
   riskStyle: 'Aman' | 'Seimbang' | 'Pertumbuhan Tinggi';
+  stressLevel: number; // 0 - 100
+  happinessLevel: number; // 0 - 100
   milestones: string[];
+  decisionLogs: {
+    age: number;
+    title: string;
+    choice: string;
+    impact: string;
+  }[];
   yearlyLogs: {
     year: number;
     age: number;
@@ -94,17 +158,7 @@ export interface LifeSimulatorState {
     netWorth: number;
     liquidCash: number;
     investments: number;
+    debt: number;
     event?: string;
   }[];
-}
-
-export interface LearningPath {
-  id: string;
-  title: string;
-  persona: 'Mahasiswa / Pemula' | 'First Jobber / Pekerja' | 'Investor & Trader' | 'Pengusaha / Freelance';
-  description: string;
-  iconName: string;
-  moduleIds: string[];
-  progressPercent: number;
-  badgeTitle: string;
 }

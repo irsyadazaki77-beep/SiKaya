@@ -14,23 +14,37 @@ export function configureSecurity(app: Express, isProduction: boolean): void {
         "http://localhost:*"
       ];
 
+  const scriptSrcDirectives = isProduction
+    ? [
+        "'self'",
+        "https://apis.google.com",
+        "https://*.firebaseapp.com",
+        "https://s3.tradingview.com",
+        "https://*.tradingview.com",
+      ]
+    : [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "https://apis.google.com",
+        "https://*.firebaseapp.com",
+        "https://s3.tradingview.com",
+        "https://*.tradingview.com",
+      ];
+
+  const imgSrcDirectives = isProduction
+    ? ["'self'", "data:", "blob:", "https:"]
+    : ["'self'", "data:", "blob:", "https:", "http:"];
+
   app.use(
     helmet({
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: [
-            "'self'",
-            "'unsafe-inline'",
-            "'unsafe-eval'",
-            "https://apis.google.com",
-            "https://*.firebaseapp.com",
-            "https://s3.tradingview.com",
-            "https://*.tradingview.com",
-          ],
+          scriptSrc: scriptSrcDirectives,
           styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
           fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-          imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
+          imgSrc: imgSrcDirectives,
           connectSrc: [
             "'self'",
             "ws://localhost:*",
@@ -79,3 +93,4 @@ export function configureSecurity(app: Express, isProduction: boolean): void {
 
   app.use(express.json({ limit: '50kb' }));
 }
+

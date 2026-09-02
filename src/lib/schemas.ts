@@ -80,6 +80,22 @@ export const CompleteModuleSchema = z.object({
   score: z.number().min(0).max(100).optional()
 });
 
+export const EventTypeEnum = z.enum([
+  'QUIZ_COMPLETED',
+  'DAILY_MISSION',
+  'POMODORO_COMPLETED',
+  'SIMULATOR_CHALLENGE',
+  'CALCULATOR_ANALYSIS'
+]);
+
+export const ClaimEventSchema = z.object({
+  eventType: EventTypeEnum,
+  eventId: z.string().min(1).max(64),
+  metadata: z.record(z.string(), z.unknown()).optional()
+});
+
+export type ClaimEventInput = z.infer<typeof ClaimEventSchema>;
+
 export const UserProfileUpdateSchema = z.object({
   fullName: z.string().min(1).max(128).optional(),
   avatar: z.string().max(256).optional(),

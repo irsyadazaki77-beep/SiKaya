@@ -348,10 +348,20 @@ export function CommunityPage() {
         {/* Header */}
         <PageHeader
           category="Komunitas"
-          title="Forum Diskusi & Live Shoutbox Gen Z"
-          description="Tempat berbagi wawasan finansial, cerita investasi, serta diskusi aktif sesama anggota komunitas."
-          badge="AKTIF & MODERATED"
+          title="Forum Diskusi & Simulasi Komunitas Finansial"
+          description="Tempat berlatih berbagi wawasan finansial, studi kasus investasi, serta simulasi diskusi sesama pembelajar literasi keuangan."
+          badge="DEMO KOMUNITAS"
         />
+
+        {/* Data Provenance & Transparency Notice */}
+        <div className="bg-indigo-500/10 border border-indigo-500/20 dark:bg-indigo-950/20 dark:border-indigo-900/40 p-4 rounded-2xl flex items-center justify-between gap-3 text-xs text-indigo-900 dark:text-indigo-200">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="font-bold bg-indigo-500/20 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 rounded text-[10px] uppercase font-mono tracking-wider">
+              SIMULASI RUANG DISKUSI
+            </span>
+            <span>Ruang diskusi ini merupakan simulator forum edukasi. Diskusi tersimpan di penyimpanan browser lokal Anda untuk latihan menyampaikan opini finansial yang bijak.</span>
+          </div>
+        </div>
 
         {/* Global Stats Widget */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -360,8 +370,8 @@ export function CommunityPage() {
               <Users className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Anggota Aktif</p>
-              <p className="text-base font-black text-slate-950 dark:text-white font-mono">12,450</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Topik Terbuka</p>
+              <p className="text-base font-black text-slate-950 dark:text-white font-mono">{posts.length} Diskusi</p>
             </div>
           </div>
           
@@ -370,8 +380,8 @@ export function CommunityPage() {
               <MessageSquare className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Total Postingan</p>
-              <p className="text-base font-black text-slate-950 dark:text-white font-mono">{posts.length + 256}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Shoutbox Interaktif</p>
+              <p className="text-base font-black text-slate-950 dark:text-white font-mono">{shouts.length} Pesan</p>
             </div>
           </div>
 
@@ -380,7 +390,7 @@ export function CommunityPage() {
               <Flame className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Trending Hari Ini</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Topik Pilihan</p>
               <p className="text-base font-black text-slate-950 dark:text-white font-mono">#DanaDarurat</p>
             </div>
           </div>
@@ -390,8 +400,8 @@ export function CommunityPage() {
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Skor Keaktifan Anda</p>
-              <p className="text-base font-black text-slate-950 dark:text-white font-mono">XP +420</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Status Moderasi</p>
+              <p className="text-base font-black text-emerald-600 dark:text-emerald-400 font-mono">Filter Otomatis</p>
             </div>
           </div>
         </div>

@@ -321,9 +321,9 @@ export function ClassroomPage() {
   const sortedGlossaryItems = useMemo(() => {
     const filtered = GLOSSARY_ITEMS.filter((item) => {
       const matchSearch = item.term.toLowerCase().includes(glossarySearch.toLowerCase()) || 
-                          item.definition.toLowerCase().includes(glossarySearch.toLowerCase());
-      const matchCat = glossaryCategory === 'all' || 
-                       (glossaryCategory === 'investing' ? item.category === 'investasi' : item.category === glossaryCategory);
+                          item.simpleExplanation.toLowerCase().includes(glossarySearch.toLowerCase()) ||
+                          item.advancedExplanation.toLowerCase().includes(glossarySearch.toLowerCase());
+      const matchCat = glossaryCategory === 'all' || item.category === glossaryCategory;
       return matchSearch && matchCat;
     });
     return [...filtered].sort((a, b) => a.term.localeCompare(b.term));
@@ -1618,7 +1618,7 @@ export function ClassroomPage() {
                       className="absolute inset-0 p-4 bg-slate-50 dark:bg-slate-850 text-center rounded-2xl border-2 border-solid border-slate-200 dark:border-slate-750 flex flex-col justify-center items-center shadow-inner overflow-y-auto"
                     >
                       <p className="text-xs font-bold text-slate-850 dark:text-slate-100 leading-relaxed">
-                        {GLOSSARY_ITEMS[flashcardIdx].definition}
+                        {GLOSSARY_ITEMS[flashcardIdx].simpleExplanation}
                       </p>
                       <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200/40 px-2 py-1 rounded-lg text-[9px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wide block mt-2 max-w-[95%]">
                         ⚠️ Realita: {GLOSSARY_ITEMS[flashcardIdx].antiMisleading.slice(0, 85)}...
@@ -2591,19 +2591,12 @@ export function ClassroomPage() {
                             </h4>
                           </div>
 
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
-                            item.category === 'investasi' ? 'bg-indigo-50 text-indigo-750 border border-indigo-100 dark:bg-indigo-950 dark:text-indigo-400' :
-                            item.category === 'risiko' ? 'bg-rose-50 text-rose-750 border border-rose-100 dark:bg-rose-950 dark:text-rose-400' :
-                            item.category === 'pondasi' ? 'bg-emerald-50 text-emerald-750 border border-emerald-100 dark:bg-emerald-950 dark:text-emerald-400' :
-                            'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-850 dark:text-slate-400'
-                          }`}>
-                            {item.category === 'investasi' ? 'Investasi' :
-                             item.category === 'risiko' ? 'Risiko & Utang' :
-                             item.category === 'pondasi' ? 'Pondasi' : 'Umum'}
+                          <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-teal-50 text-teal-700 border border-teal-100 dark:bg-teal-950 dark:text-teal-300">
+                            {item.category}
                           </span>
                         </div>
                         <p className="text-xs text-slate-650 dark:text-slate-350 leading-relaxed font-medium">
-                          {item.definition}
+                          {item.simpleExplanation}
                         </p>
                       </div>
 

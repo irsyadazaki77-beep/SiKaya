@@ -658,9 +658,9 @@ export function AiAdvisorPage() {
                 <Send className="w-5 h-5" />
               </button>
             </form>
-            <p className="text-xs text-slate-400 mt-3 flex items-center justify-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-teal-600" />
-              <span>Informasi bersifat edukasi, bukan rekomendasi investasi profesional.</span>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 flex items-center justify-center gap-1.5 text-center px-2">
+              <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
+              <span>Informasi bersifat simulasi edukasi finansial dan bukan saran investasi berizin OJK/Bappebti. Jangan bagikan data pribadi rahasia (PIN/Password).</span>
             </p>
           </div>
         </motion.div>

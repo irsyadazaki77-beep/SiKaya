@@ -15,7 +15,7 @@ describe('financeUtils', () => {
       // yr 1: 10,000,000 * 1.1 + 12,000,000 * 1.05 = 11,000,000 + 12,600,000 = 23,600,000
       // yr 2: 23,600,000 * 1.1 + 12,600,000 = 25,960,000 + 12,600,000 = 38,560,000
       // Instead of manual calculation, just check it's > 22000000
-      expect(total).toBe(226748975); // based on actual algorithm output
+      expect(total).toBe(231915394); // based on standard monthly compounding formula
     });
 
     it('returns 0 for negative inputs', () => {

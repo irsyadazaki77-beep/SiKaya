@@ -21,7 +21,7 @@ export function TrustSection() {
             whileHover={{ scale: 1.05 }} 
             className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-bold text-xs"
           >
-            <CheckCircle2 className="w-5 h-5 text-indigo-600" /> Edukasi Standar OJK
+            <CheckCircle2 className="w-5 h-5 text-indigo-600" /> Kerangka Literasi Finansial
           </motion.div>
 
           <motion.div 

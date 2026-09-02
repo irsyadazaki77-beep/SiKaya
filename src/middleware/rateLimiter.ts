@@ -9,6 +9,7 @@ export const generalApiLimiter: RateLimitRequestHandler = rateLimit({
   max: process.env.NODE_ENV === 'production' ? 300 : 99999, // Limit each IP to 300 requests in production, relax in dev
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  validate: false,
   message: {
     error: {
       code: 'TOO_MANY_REQUESTS',
@@ -30,13 +31,14 @@ export const aiChatLimiter: RateLimitRequestHandler = rateLimit({
   max: process.env.NODE_ENV === 'production' ? 30 : 9999, // Limit each user / IP to 30 AI prompts in production, relax in dev
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  validate: false,
   keyGenerator: (req: Request): string => {
     // If request passed authentication middleware, use user's UID
     if (req.user && req.user.uid) {
       return `user_${req.user.uid}`;
     }
     // Otherwise fallback to IP
-    return `ip_${req.ip || req.socket.remoteAddress || 'unknown'}`;
+    return `ip_${req.ip || 'unknown'}`;
   },
   message: {
     error: {
@@ -50,13 +52,67 @@ export const aiChatLimiter: RateLimitRequestHandler = rateLimit({
 });
 
 /**
+ * Rate limiter for gamification, reward claims, and module completions.
+ * Keyed strictly by authenticated user UID.
+ */
+export const rewardLimiter: RateLimitRequestHandler = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === 'production' ? 40 : 9999, // Max 40 reward claims / completions per 5 mins
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  validate: false,
+  keyGenerator: (req: Request): string => {
+    if (req.user && req.user.uid) {
+      return `reward_uid_${req.user.uid}`;
+    }
+    return `reward_ip_${req.ip || 'unknown'}`;
+  },
+  message: {
+    error: {
+      code: 'REWARD_RATE_LIMIT_EXCEEDED',
+      message: 'Aktivitas klaim reward terlalu cepat. Silakan tunggu beberapa saat.',
+    },
+  },
+  handler: (req: Request, res: Response, _next, options) => {
+    res.status(options.statusCode).json(options.message);
+  },
+});
+
+/**
+ * Rate limiter for profile updates and transaction mutations.
+ */
+export const profileMutationLimiter: RateLimitRequestHandler = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === 'production' ? 30 : 9999,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  validate: false,
+  keyGenerator: (req: Request): string => {
+    if (req.user && req.user.uid) {
+      return `profile_uid_${req.user.uid}`;
+    }
+    return `profile_ip_${req.ip || 'unknown'}`;
+  },
+  message: {
+    error: {
+      code: 'MUTATION_RATE_LIMIT_EXCEEDED',
+      message: 'Terlalu banyak pembaruan profil dalam waktu singkat. Silakan tunggu.',
+    },
+  },
+  handler: (req: Request, res: Response, _next, options) => {
+    res.status(options.statusCode).json(options.message);
+  },
+});
+
+/**
  * Rate limiter for authentication or login-sensitive endpoints
  */
 export const authLimiter: RateLimitRequestHandler = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: process.env.NODE_ENV === 'production' ? 20 : 9999, // Max 20 attempts in production, relax in dev
+  max: process.env.NODE_ENV === 'production' ? 50 : 9999,
   standardHeaders: 'draft-7',
   legacyHeaders: false,
+  validate: false,
   message: {
     error: {
       code: 'AUTH_RATE_LIMIT_EXCEEDED',
@@ -67,3 +123,4 @@ export const authLimiter: RateLimitRequestHandler = rateLimit({
     res.status(options.statusCode).json(options.message);
   },
 });
+

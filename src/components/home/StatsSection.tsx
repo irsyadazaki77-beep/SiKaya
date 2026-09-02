@@ -15,8 +15,8 @@ export function StatsSection() {
             <div className="text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-widest font-mono">MODUL BELAJAR</div>
           </div>
           <div className="text-center px-2">
-            <div className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-1 font-display">125Rb+</div>
-            <div className="text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-widest font-mono">PELAJAR AKTIF</div>
+            <div className="text-4xl font-black text-slate-900 dark:text-slate-100 mb-1 font-display">10Rb+</div>
+            <div className="text-slate-500 dark:text-slate-400 text-[9px] font-bold uppercase tracking-widest font-mono">SIMULASI TERSELESAIKAN</div>
           </div>
           <div className="text-center px-2">
             <div className="text-4xl font-black text-teal-600 dark:text-teal-400 mb-1 font-display">200+</div>

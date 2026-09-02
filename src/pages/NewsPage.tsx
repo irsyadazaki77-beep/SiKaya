@@ -169,11 +169,21 @@ export function NewsPage() {
         
         {/* Header */}
         <PageHeader
-          category="Komunitas"
-          title="Sentimen Pasar & Berita Terupdate"
-          description="Eksplorasi berita bursa terkini, analisis pengaruh instan, dan saksikan debat komunitas tentang tren pasar keuangan global."
-          badge="AI SUMMARY & IMPACT"
+          category="Simulasi"
+          title="Studi Kasus Sentimen Pasar & Simulasi Berita"
+          description="Eksplorasi studi kasus pasar terkini, analisis estimasi dampak terhadap aset portofolio, dan pelajari cara investor merespons rilis berita ekonomi makro."
+          badge="STUDI KASUS EDUKASI"
         />
+
+        {/* Data Provenance & Transparency Notice */}
+        <div className="bg-amber-500/10 border border-amber-500/20 dark:bg-amber-950/20 dark:border-amber-900/40 p-4 rounded-2xl flex items-center justify-between gap-3 text-xs text-amber-900 dark:text-amber-200">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300 px-2 py-0.5 rounded text-[10px] uppercase font-mono tracking-wider">
+              SIMULASI EDUKASI
+            </span>
+            <span>Semua berita, skenario, dan proyeksi dampak portofolio di bawah merupakan materi studi kasus kurasi untuk latihan analisis keputusan finansial.</span>
+          </div>
+        </div>
 
         {/* Dynamic Controls Row */}
         <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row gap-4 items-center justify-between">

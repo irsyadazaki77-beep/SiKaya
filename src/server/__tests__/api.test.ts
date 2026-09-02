@@ -19,12 +19,25 @@ describe('API Integration Tests', () => {
     expect(res.body.status).toBe('ok');
   });
 
+  describe('Module Registry Security', () => {
+    it('rejects unauthenticated requests to complete-module with 401', async () => {
+      const res = await request(app)
+        .post('/api/complete-module')
+        .send({ moduleId: 'budgeting' });
+      expect(res.statusCode).toBe(401);
+    });
+
+    it('rejects unauthenticated requests to claim-event with 401', async () => {
+      const res = await request(app)
+        .post('/api/claim-event')
+        .send({ eventType: 'QUIZ_COMPLETED', eventId: 'quiz_1' });
+      expect(res.statusCode).toBe(401);
+    });
+  });
+
   // Mocked tests for Chat API
   describe('POST /api/chat', () => {
     it('returns 401 without token', async () => {
-      // In reality, this route is in server.ts under authenticate middleware.
-      // Since it's tightly coupled, we can mock a similar route here for testing the middleware.
-      // For this test, we verify that the user cannot proceed without auth.
       const protectedApp = express();
       protectedApp.use(express.json());
       const authMiddleware = (req: any, res: any, next: any) => {

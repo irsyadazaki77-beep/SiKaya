@@ -244,17 +244,17 @@ export function LeaderboardPage() {
     localStorage.setItem('sikaya_unlocked_titles', JSON.stringify(updated));
   };
 
-  // Initial peer players database
+  // Initial peer players database (Realistic learner personas for benchmark comparison)
   const basePlayers: Player[] = [
-    { name: "Reza Rahadian", xp: 12500, avatar: "👑", level: "Grandmaster", title: "Sultan Dividen 👑", change: "up" },
-    { name: "Dian Sastro", xp: 11200, avatar: "👩‍💼", level: "Grandmaster", title: "Pawang Inflasi 🛡️", change: "same" },
-    { name: "Iqbaal Ramadhan", xp: 10800, avatar: "👨‍🎓", level: "Grandmaster", title: "GigaChad Saham 🦾", change: "up" },
-    { name: "Chelsea Islan", xp: 9500, avatar: "👩‍🎨", level: "Master", title: "Pencari Dividen 👑", change: "down" },
-    { name: "Joe Taslim", xp: 9200, avatar: "🥷", level: "Master", title: "Penakluk IHSG 📈", change: "up" },
-    { name: "Maudy Ayunda", xp: 7900, avatar: "👩‍🏫", level: "Master", title: "Guru Keuangan 🧠", change: "down" },
-    { name: "Pevita Pearce", xp: 6200, avatar: "🧚‍♀️", level: "Master", title: "Pejuang Rupiah 💸", change: "up" },
-    { name: "Ariel Noah", xp: 4800, avatar: "🎤", level: "Diamond", title: "Investor Pemula 🎓", change: "same" },
-    { name: "Nicholas Saputra", xp: 3400, avatar: "🕶️", level: "Diamond", title: "Investor Pemula 🎓", change: "down" },
+    { name: "Dimas Setiawan", xp: 12500, avatar: "👨‍💻", level: "Grandmaster", title: "Sultan Dividen 👑", change: "up" },
+    { name: "Rani Handayani", xp: 11200, avatar: "👩‍💼", level: "Grandmaster", title: "Pawang Inflasi 🛡️", change: "same" },
+    { name: "Fajar Hidayat", xp: 10800, avatar: "👨‍🎓", level: "Grandmaster", title: "GigaChad Saham 🦾", change: "up" },
+    { name: "Nadia Safitri", xp: 9500, avatar: "👩‍🎨", level: "Master", title: "Pencari Dividen 👑", change: "down" },
+    { name: "Budi Santoso", xp: 9200, avatar: "👨‍💼", level: "Master", title: "Penakluk IHSG 📈", change: "up" },
+    { name: "Siti Aminah", xp: 7900, avatar: "🧕", level: "Master", title: "Guru Keuangan 🧠", change: "down" },
+    { name: "Alex Chandra", xp: 6200, avatar: "🏂", level: "Master", title: "Pejuang Rupiah 💸", change: "up" },
+    { name: "Rian Ardiansyah", xp: 4800, avatar: "🐯", level: "Diamond", title: "Investor Pemula 🎓", change: "same" },
+    { name: "Dian Puspita", xp: 3400, avatar: "🦄", level: "Diamond", title: "Investor Pemula 🎓", change: "down" },
   ];
 
   // Dynamically assemble leaderboard with the current user inserted & sorted
@@ -564,9 +564,19 @@ export function LeaderboardPage() {
         <PageHeader
           category="Komunitas"
           title="Papan Skor & Arena Gamifikasi"
-          description="Tingkatkan keterampilan keuangan Anda, tuntaskan misi harian, kumpulkan lencana langka, dan bersainglah dengan ribuan siswa dari seluruh Nusantara."
+          description="Tingkatkan keterampilan keuangan Anda, tuntaskan misi harian, kumpulkan lencana langka, dan bersainglah secara sportif di kelas literasi finansial."
           badge="ARENA INVESTOR"
         />
+
+        {/* Transparency Banner */}
+        <div className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl flex items-center justify-between gap-3 text-xs text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-2">
+            <span className="font-bold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded text-[10px] uppercase font-mono tracking-wider">
+              BENCHMARK SIMULASI
+            </span>
+            <span>Papan peringkat ini menghitung total XP edukatif Anda dari penyelesaian modul belajar, kuis harian, dan pencapaian finansial.</span>
+          </div>
+        </div>
 
         {/* Dynamic Bento Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">

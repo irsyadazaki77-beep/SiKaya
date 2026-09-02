@@ -1,81 +1,168 @@
 export interface GlossaryItem {
+  id: string;
   term: string;
-  category: string;
-  definition: string;
+  category: 'Pondasi Finansial' | 'Investasi' | 'Pasar Modal' | 'Manajemen Risiko & Utang' | 'Perencanaan Masa Depan';
+  simpleExplanation: string;
+  advancedExplanation: string;
+  example: string;
+  formula?: string;
+  relatedTerms: string[];
+  moduleId?: string; // id modul di classroom untuk direct link
   antiMisleading: string;
 }
 
+export const GLOSSARY_CATEGORIES = [
+  'Semua',
+  'Pondasi Finansial',
+  'Investasi',
+  'Pasar Modal',
+  'Manajemen Risiko & Utang',
+  'Perencanaan Masa Depan'
+] as const;
+
 export const GLOSSARY_ITEMS: GlossaryItem[] = [
   {
-    term: "Reksa Dana (Mutual Fund)",
-    category: "investasi",
-    definition: "Wadah untuk menghimpun dana masyarakat yang kemudian dikelola oleh Manajer Investasi (MI) profesional untuk dimasukkan ke berbagai instrumen investasi seperti pasar uang, obligasi, atau saham.",
-    antiMisleading: "Manajer Investasi mengenakan biaya pengelolaan (Expense Ratio). Selalu cek rekam jejak MI di prospektus resmi, dan pahami bahwa kinerja masa lalu tidak menjamin hasil masa depan!"
-  },
-  {
-    term: "Inflasi (Inflation)",
-    category: "umum",
-    definition: "Kondisi di mana harga barang dan jasa secara umum mengalami kenaikan terus-menerus dalam jangka waktu tertentu, yang mengakibatkan daya beli uangmu menurun.",
-    antiMisleading: "Menaruh uang 100% di tabungan bank biasa di bawah kasur dijamin akan termakan inflasi. Investasi adalah cara melawan inflasi, namun pilihlah instrumen yang risikonya sesuai dengan jangka waktu tujuanmu."
-  },
-  {
-    term: "Bullish & Bearish",
-    category: "investasi",
-    definition: "Istilah tren pasar modal. Bullish merujuk pada kondisi pasar yang sedang naik pesat (optimis), sedangkan Bearish merujuk pada kondisi pasar yang terus merosot turun (pesimis).",
-    antiMisleading: "Di saat pasar Bullish, semua orang merasa pintar dan pamer keuntungan di media sosial. Jangan terjebak FOMO membeli di puncak harga! Tetap konsisten investasi berkala (Dollar Cost Averaging)."
-  },
-  {
+    id: 'compound-interest',
     term: "Compound Interest (Bunga Majemuk)",
-    category: "pondasi",
-    definition: "Bunga atau hasil imbal balik dari investasi yang diinvestasikan kembali, sehingga di periode berikutnya menghasilkan imbal hasil lagi atas modal baru yang lebih besar. Sering disebut efek bola salju.",
-    antiMisleading: "Bunga majemuk membutuhkan horizon waktu tahunan bahkan puluhan tahun agar terasa dampaknya secara signifikan. Jangan percaya aplikasi ilegal yang menjanjikan 'bunga majemuk harian/mingguan' yang pasti untung!"
+    category: "Pondasi Finansial",
+    simpleExplanation: "Bunga yang ikut menghasilkan bunga. Diibaratkan seperti bola salju kecil yang menggelinding dan semakin lama semakin membesar.",
+    advancedExplanation: "Proses reinvestasi imbal hasil (bunga/dividen/capital gain) ke pokok investasi awal secara kontinu, sehingga pada periode perhitungan berikutnya bunga dihitung dari saldo total baru yang lebih besar (pertumbuhan eksponensial).",
+    example: "Investasi Rp 10.000.000 dengan imbal hasil 10% per tahun. Di tahun ke-1 dapat Rp 1.000.000 (total Rp 11 jt). Di tahun ke-2 bukan lagi dapat Rp 1 jt, melainkan 10% dari Rp 11 jt = Rp 1.100.000.",
+    formula: "A = P × (1 + r/n)^(n×t)",
+    relatedTerms: ["Rule of 72", "Dollar Cost Averaging", "Time Value of Money"],
+    moduleId: "compound",
+    antiMisleading: "Bunga majemuk membutuhkan horizon waktu tahunan bahkan puluhan tahun agar terasa dampaknya secara signifikan. Waspadai tawaran investasi bodong yang menjanjikan bunga majemuk harian pasti untung!"
   },
   {
-    term: "Diversifikasi (Diversification)",
-    category: "risiko",
-    definition: "Strategi menyebarkan modal investasimu ke beberapa instrumen yang berbeda (misal: emas, reksa dana pasar uang, dan saham) demi meminimalisir risiko kerugian total. Populer dengan istilah: 'Don't put all your eggs in one basket'.",
-    antiMisleading: "Diversifikasi berlebihan juga bisa mengurangi potensi return optimal. Sesuaikan sebaran aset dengan profil risikomu sendiri, jangan sekadar ikut-ikutan portofolio orang lain."
-  },
-  {
-    term: "Profil Risiko (Risk Profile)",
-    category: "risiko",
-    definition: "Tingkat toleransi dan kesiapan mental seorang investor dalam menghadapi fluktuasi naik-turunnya nilai portofolio investasinya. Terbagi menjadi Konservatif, Moderat, dan Agresif.",
-    antiMisleading: "Jangan pernah memaksakan diri menjadi investor Agresif (membeli 100% saham/kripto) jika kamu masih panik dan tidak bisa tidur nyenyak saat melihat portofoliomu minus 5%!"
-  },
-  {
+    id: 'dana-darurat',
     term: "Dana Darurat (Emergency Fund)",
-    category: "pondasi",
-    definition: "Tabungan khusus berupa uang tunai atau aset sangat likuid (seperti RDPU atau deposito) yang sengaja dipisahkan hanya untuk menutup pengeluaran tidak terduga seperti sakit mendadak, gawai utama rusak, atau kehilangan pekerjaan.",
-    antiMisleading: "Dana darurat tidak boleh ditaruh di saham atau instrumen berisiko tinggi karena jika terjadi krisis di saat pasar crash, nilai dana daruratmu terpaksa dilikuidasi dalam kondisi rugi besar."
+    category: "Pondasi Finansial",
+    simpleExplanation: "Tabungan khusus yang dipisahkan dan hanya boleh disentuh saat terjadi kejadian tak terduga seperti sakit mendadak atau kehilangan pekerjaan.",
+    advancedExplanation: "Cadangan likuiditas minimum (setara 3-12 bulan pengeluaran rutin) yang dialokasikan pada instrumen tanpa risiko volatilitas pasar modal demi melindungi portofolio jangka panjang dari likuidasi paksa di saat kondisi pasar crash.",
+    example: "Pengeluaran rutin bulanan seorang lajang Rp 4.000.000. Dana darurat ideal minimal 3 × Rp 4.000.000 = Rp 12.000.000, disimpan di rekening terpisah atau Reksa Dana Pasar Uang (RDPU).",
+    formula: "Target Dana Darurat = Pengeluaran Bulanan × (3 s.d. 12 bulan)",
+    relatedTerms: ["Rasio Likuiditas", "Reksa Dana Pasar Uang", "Cashflow"],
+    moduleId: "emergency",
+    antiMisleading: "Dana darurat tidak boleh ditaruh di saham berisiko tinggi atau kripto karena jika terjadi krisis di saat pasar jatuh, nilainya akan tergerus saat harus dicairkan mendesak."
   },
   {
-    term: "Deposito Syariah / Biasa",
-    category: "umum",
-    definition: "Produk simpanan bank dengan jangka waktu tertentu (misal 1, 3, atau 6 bulan) di mana uangmu 'dikunci' dan kamu mendapatkan bagi hasil atau bunga tetap yang umumnya lebih tinggi dari tabungan biasa.",
-    antiMisleading: "Mencairkan deposito sebelum jatuh tempo biasanya dikenakan denda penalti (kecuali deposito digital tertentu). Pastikan uang yang didepositokan bukan uang belanja mingguan!"
+    id: 'aturan-50-30-20',
+    term: "Aturan Budgeting 50/30/20",
+    category: "Pondasi Finansial",
+    simpleExplanation: "Panduan membagi gaji: 50% untuk kebutuhan pokok, 30% untuk keinginan/lifestyle, dan 20% untuk tabungan & investasi.",
+    advancedExplanation: "Kerangka kerja alokasi arus kas proporsional yang dipopulerkan oleh Elizabeth Warren untuk memastikan stabilitas keuangan dengan membatasi biaya hidup tetap (Needs ≤ 50%), mengendalikan pengeluaran diskresioner (Wants ≤ 30%), dan mengunci akumulasi aset (Savings/Debt Repayment ≥ 20%).",
+    example: "Gaji bersih Rp 5.000.000: Rp 2.500.000 untuk kos, makan pokok, listrik, transport; Rp 1.500.000 untuk nongkrong, streaming, hobi; Rp 1.000.000 untuk tabungan dana darurat / reksa dana.",
+    formula: "Kebutuhan (50%) + Keinginan (30%) + Tabungan/Investasi (20%) = 100% Penghasilan",
+    relatedTerms: ["Cashflow", "Sistem Amplop Digital", "Latte Factor"],
+    moduleId: "budgeting",
+    antiMisleading: "Aturan 50/30/20 adalah pedoman fleksibel. Bagi yang memiliki cicilan utang tinggi, porsi keinginan sebaiknya dipangkas untuk melunasi utang terlebih dahulu."
   },
   {
-    term: "Saham (Stocks)",
-    category: "investasi",
-    definition: "Bukti kepemilikan nilai sebuah perusahaan. Dengan membeli saham, kamu resmi menjadi pemilik sebagian kecil dari perusahaan tersebut dan berhak atas dividen (jika dibagikan) serta potensi capital gain.",
-    antiMisleading: "Saham berfluktuasi sangat tajam setiap hari dan tidak ada jaminan modal kembali. Menaruh seluruh modal di satu saham gorengan tanpa analisis fundamental adalah spekulasi judi, bukan investasi!"
+    id: 'dti-ratio',
+    term: "Debt-to-Income Ratio (DTI)",
+    category: "Manajemen Risiko & Utang",
+    simpleExplanation: "Persentase gaji bulanan yang habis digunakan untuk membayar cicilan utang.",
+    advancedExplanation: "Rasio kelayakan kredit dan beban utang yang mengukur proporsi pembayaran kewajiban utang bulanan terhadap total pendapatan kotor atau bersih bulanan. Batas sehat perbankan di Indonesia adalah di bawah 30-35%.",
+    example: "Gaji Rp 6.000.000 per bulan, cicilan paylater & KPR total Rp 1.800.000. Maka DTI = (1.800.000 / 6.000.000) × 100% = 30% (Batas Aman).",
+    formula: "DTI = (Total Cicilan Bulanan / Pendapatan Bulanan) × 100%",
+    relatedTerms: ["Debt Snowball", "Paylater & Pinjol", "Financial Health Score"],
+    moduleId: "debt",
+    antiMisleading: "DTI di atas 40% sangat berbahaya karena sedikit saja kenaikan biaya hidup atau perlambatan ekonomi dapat memicu gagal bayar (default)."
   },
   {
-    term: "Obligasi / SBN (Surat Berharga Negara)",
-    category: "investasi",
-    definition: "Surat utang yang diterbitkan oleh pemerintah (seperti ORI, SBR, Sukuk) atau perusahaan swasta. Investor meminjamkan uang kepada penerbit dan mendapatkan imbalan kupon (bunga) berkala hingga jatuh tempo.",
-    antiMisleading: "SBN ritel yang dijamin undang-undang sangat aman dari risiko gagal bayar, namun likuiditasnya terbatas. Beberapa tipe SBN (seperti SBR atau ST) tidak bisa diperjualbelikan di pasar sekunder sebelum jatuh tempo."
+    id: 'fire-number',
+    term: "FIRE Number (Financial Independence, Retire Early)",
+    category: "Perencanaan Masa Depan",
+    simpleExplanation: "Jumlah total kekayaan bersih yang harus Anda kumpulkan agar hasil investasinya dapat membiayai seluruh kebutuhan hidup Anda seumur hidup tanpa perlu bekerja lagi.",
+    advancedExplanation: "Target akumulasi modal berdasarkan Trinity Study yang menggunakan 'Aturan 4% Safe Withdrawal Rate (SWR)'. Nilai ini setara dengan 25 kali total pengeluaran tahunan seseorang.",
+    example: "Pengeluaran hidup Anda Rp 60.000.000 per tahun (Rp 5.000.000/bulan). FIRE Number Anda adalah 25 × Rp 60.000.000 = Rp 1.500.000.000.",
+    formula: "FIRE Number = Pengeluaran Tahunan × 25 (atau Pengeluaran Tahunan / SWR%)",
+    relatedTerms: ["Safe Withdrawal Rate (SWR)", "Compound Interest", "Asset Allocation"],
+    moduleId: "investing",
+    antiMisleading: "Menghitung FIRE wajib memperhitungkan inflasi masa depan dan kenaikan biaya kesehatan. Menggunakan angka biaya hidup hari ini tanpa penyesuaian inflasi adalah kesalahan fatal."
   },
   {
-    term: "Paylater & Pinjol Ilegal",
-    category: "risiko",
-    definition: "Fasilitas kredit digital instan untuk konsumsi. Pinjol ilegal adalah pinjaman tanpa izin OJK yang mengenakan bunga selangit, denda mencekik, dan cara penagihan yang tidak beretika.",
-    antiMisleading: "Kemudahan paylater menciptakan ilusi bahwa kamu 'mampu membeli', padahal kamu sedang merampok pendapatan masa depanmu sendiri ditambah bunga denda. Gunakan HANYA jika sangat mendesak untuk hal produktif!"
+    id: 'rule-of-72',
+    term: "Rule of 72 (Aturan 72)",
+    category: "Pondasi Finansial",
+    simpleExplanation: "Rumus cepat untuk memperkirakan berapa tahun yang dibutuhkan agar uang investasi Anda berlipat ganda menjadi 2 kali lipat.",
+    advancedExplanation: "Aproksimasi matematis dari fungsi logaritma natural ln(2) / ln(1 + r) yang membagi angka 72 dengan tingkat imbal hasil tahunan (dalam persen) untuk mengetahui periode penggandaan modal.",
+    example: "Investasi di instrumen dengan imbal hasil 8% per tahun. Waktu yang dibutuhkan agar uang berlipat 2x adalah 72 / 8 = 9 tahun.",
+    formula: "Tahun Penggandaan = 72 / Tingkat Imbal Hasil (%)",
+    relatedTerms: ["Compound Interest", "Inflasi"],
+    moduleId: "compound",
+    antiMisleading: "Aturan 72 adalah estimasi cepat dan paling akurat pada rentang imbal hasil antara 4% hingga 15% per tahun."
   },
   {
-    term: "Asset Allocation (Alokasi Aset)",
-    category: "risiko",
-    definition: "Cara membagi porsi portofolio investasi ke dalam berbagai kelas aset (seperti kas, obligasi, saham, komoditas) untuk menyeimbangkan risiko dan imbal hasil sesuai target waktu investasimu.",
-    antiMisleading: "Tidak ada satu formula alokasi aset yang cocok untuk semua orang seumur hidup. Alokasi asetmu harus berubah seiring bertambahnya usia, pendapatan, atau perubahan tanggung jawab keluarga."
+    id: 'dca-strategy',
+    term: "Dollar Cost Averaging (DCA)",
+    category: "Investasi",
+    simpleExplanation: "Strategi menabung investasi dalam jumlah uang yang sama secara rutin di tanggal yang sama, tanpa peduli harga pasar sedang naik atau turun.",
+    advancedExplanation: "Pendekatan investasi sistematis di mana investor membeli aset dalam interval waktu yang konsisten terlepas dari volatilitas pasar, sehingga menurunkan harga beli rata-rata per unit dan mengeliminasi risiko psikologis market timing.",
+    example: "Membeli Reksa Dana Saham sebesar Rp 500.000 setiap tanggal 25 setelah gajian. Saat harga turun dapat lebih banyak unit, saat harga naik dapat lebih sedikit unit.",
+    formula: "Harga Rata-Rata = Total Modal yang Dikeluarkan / Total Unit yang Diperoleh",
+    relatedTerms: ["Lump Sum", "Diversifikasi", "Profil Risiko"],
+    moduleId: "investing",
+    antiMisleading: "DCA efektif untuk instrumen aset yang memiliki tren jangka panjang positif (seperti IHSG / S&P 500 / Reksa Dana Indeks). DCA pada saham gorengan yang sedang bangkrut justru akan memperbesar kerugian."
+  },
+  {
+    id: 'reksadana',
+    term: "Reksa Dana (Mutual Fund)",
+    category: "Investasi",
+    simpleExplanation: "Wadah untuk mengumpulkan dana bersama investor lain yang kemudian dikelola oleh manajer investasi profesional untuk dibelikan saham, obligasi, atau pasar uang.",
+    advancedExplanation: "Entitas kolektif investasi berbadan hukum (KIK - Kontrak Investasi Kolektif) yang diawasi oleh OJK, di mana portofolio efek dikelola oleh Manajer Investasi (MI) dan aset disimpan secara aman oleh Bank Kustodian.",
+    example: "Membeli Reksa Dana Pendapatan Tetap dengan modal mulai Rp 10.000, dana Anda otomatis disebarkan ke puluhan seri obligasi pemerintah dan korporasi berperingkat tinggi.",
+    formula: "NAB per Unit = (Total Aset Bersih Reksa Dana - Biaya Operasional) / Total Unit Penyertaan",
+    relatedTerms: ["Expense Ratio", "Bank Kustodian", "NAB"],
+    moduleId: "reksadana",
+    antiMisleading: "Cek Expense Ratio di prospektus resmi. Kinerja masa lalu tidak menjamin hasil masa depan, namun mencerminkan konsistensi manajer investasi."
+  },
+  {
+    id: 'saham-analisis',
+    term: "Saham & Analisis Fundamental",
+    category: "Pasar Modal",
+    simpleExplanation: "Bukti kepemilikan sebagian kecil dari sebuah perusahaan nyata, di mana keuntungan diperoleh dari kenaikan harga saham (capital gain) dan pembagian laba (dividen).",
+    advancedExplanation: "Instrumen ekuitas yang merepresentasikan hak klaim atas aset dan laba emiten. Analisis fundamental mengevaluasi laporan keuangan (Neraca, Laba Rugi, Arus Kas), rasio valuasi (PER, PBV), serta keunggulan kompetitif (moat) bisnis.",
+    example: "Membeli 10 lot saham PT Bank Rakyat Indonesia Tbk (BBRI). Anda berhak hadir di RUPS dan menerima dividen tunai tahunan sesuai proporsi kepemilikan lembar saham.",
+    formula: "Price to Earnings Ratio (PER) = Harga Saham / Laba Bersih per Saham (EPS)",
+    relatedTerms: ["Dividen Yield", "Capital Gain", "IHSG"],
+    moduleId: "saham",
+    antiMisleading: "Saham berfluktuasi setiap hari. Menaruh 100% uang belanja di satu saham gorengan tanpa analisis fundamental adalah spekulasi judi berisiko kehilangan seluruh modal."
+  },
+  {
+    id: 'sbn-obligasi',
+    term: "SBN & Obligasi (Surat Berharga Negara)",
+    category: "Investasi",
+    simpleExplanation: "Surat utang yang diterbitkan oleh Pemerintah Indonesia di mana kita meminjamkan uang dan mendapatkan imbalan bunga/kupon bulanan yang dijamin negara.",
+    advancedExplanation: "Instrumen surat pengakuan utang berjangka (seperti ORI, SR, SBR, ST) yang pembayaran pokok dan imbalannya dijamin penuh oleh Undang-Undang APBN Republik Indonesia, menjadikannya salah satu aset investasi teraman bebas risiko gagal bayar negara.",
+    example: "Membeli Sukuk Ritel SR020 senilai Rp 10.000.000 dengan kupon tetap 6.4% per tahun. Setiap bulan Anda menerima transfer kupon pasif langsung ke rekening bank Anda.",
+    formula: "Kupon Bulanan = (Modal Investasi × Tingkat Kupon Tahunan × (1 - Pajak 10%)) / 12",
+    relatedTerms: ["Reksa Dana", "Yield", "Deposito Syariah"],
+    moduleId: "reksadana",
+    antiMisleading: "Meskipun aman dari risiko gagal bayar, perhatikan tipe SBN: tipe non-tradable (seperti SBR dan ST) tidak bisa dijual sebelum jatuh tempo kecuali memanfaatkan fasilitas early redemption."
+  },
+  {
+    id: 'crypto-web3',
+    term: "Aset Kripto & Web3",
+    category: "Pasar Modal",
+    simpleExplanation: "Mata uang dan aset digital yang diamankan dengan teknologi blockchain terdesentralisasi tanpa otoritas bank sentral tunggal.",
+    advancedExplanation: "Aset digital kriptografis yang beroperasi di atas jaringan peer-to-peer terdistribusi (seperti Bitcoin dan Ethereum) menggunakan mekanisme konsensus Proof of Work atau Proof of Stake. Di Indonesia diatur oleh Bappebti sebagai komoditas perdagangan berjangka.",
+    example: "Membeli Bitcoin (BTC) sebagai aset digital terdesentralisasi dengan suplai terbatas 21 juta koin untuk diversifikasi portofolio risiko tinggi.",
+    formula: "Market Cap Kripto = Harga Koin Saat Ini × Total Koin Beredar (Circulating Supply)",
+    relatedTerms: ["Blockchain", "Volatilitas", "Profil Risiko"],
+    moduleId: "crypto",
+    antiMisleading: "Aset kripto memiliki volatilitas ekstrem (bisa turun >50% dalam hitungan hari) dan rawan proyek scam/rug-pull. Jangan alokasikan lebih dari 5-10% dari total portofolio Anda jika belum memahami risikonya."
+  },
+  {
+    id: 'net-worth',
+    term: "Net Worth (Kekayaan Bersih)",
+    category: "Pondasi Finansial",
+    simpleExplanation: "Jumlah total seluruh uang dan harta yang Anda miliki dikurangi dengan seluruh utang dan cicilan yang belum lunas.",
+    advancedExplanation: "Metrik absolut kesehatan finansial yang menghitung selisih antara Total Nilai Pasar Seluruh Aset (kas, investasi, properti, barang berharga) dengan Total Liabilitas (KPR, pinjol, kartu kredit, utang pribadi).",
+    example: "Total aset Anda Rp 50.000.000 (tabungan Rp 10 jt + motor Rp 15 jt + reksa dana Rp 25 jt). Total sisa utang motor Rp 8.000.000. Kekayaan bersih Anda adalah Rp 42.000.000.",
+    formula: "Net Worth = Total Aset (Aktiva) - Total Liabilitas (Utang)",
+    relatedTerms: ["Aset", "Liabilitas", "Financial Health Score"],
+    moduleId: "portfolio",
+    antiMisleading: "Barang konsumtif yang nilainya terus turun (depresiasi cepat seperti pakaian atau gawai lama) tidak boleh dicatat dengan nilai beli baru dalam perhitungan kekayaan bersih."
   }
 ];

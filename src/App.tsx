@@ -57,8 +57,10 @@ export default function App() {
                     <Route path="features" element={<FeaturesPage />} />
                     <Route path="login" element={<LoginPage />} />
                     <Route path="belajar" element={<ClassroomPage />} />
+                    <Route path="classroom" element={<ClassroomPage />} />
                     <Route path="ai-advisor" element={<AiAdvisorPage />} />
                     <Route path="simulasi" element={<SimulationPage />} />
+                    <Route path="simulator" element={<SimulationPage />} />
                     <Route path="portfolio" element={<PortfolioPage />} />
                     <Route path="community" element={<CommunityPage />} />
                     <Route path="news" element={<NewsPage />} />

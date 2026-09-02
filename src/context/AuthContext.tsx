@@ -9,6 +9,7 @@ export interface User {
   avatar: string;
   literacyLevel: string;
   xp: number;
+  level?: number;
   completedModules: string[];
 }
 
@@ -164,9 +165,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
     if (user.completedModules.includes(moduleId)) return;
     
+    const previousUser = { ...user };
     const updatedModules = [...user.completedModules, moduleId];
     const optimisticXp = user.xp + xpReward;
 
+    // Optimistically update
     setUser(prev => prev ? ({
       ...prev,
       completedModules: updatedModules,
@@ -190,9 +193,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (resData.currentXp !== undefined) {
             setUser(prev => prev ? ({ ...prev, xp: resData.currentXp }) : prev);
           }
+        } else {
+          // Server returned error (400, 409, 429, 500) -> Rollback immediately
+          console.warn("Module completion failed on server. Rolling back optimistic state.");
+          setUser(previousUser);
         }
       } catch (err) {
-        console.error("Error authoritatively completing module on server:", err);
+        console.error("Network error authoritatively completing module on server. Rolling back:", err);
+        setUser(previousUser);
       }
     } else if (token === 'demo-token') {
       const updatedGuest = {
@@ -204,8 +212,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addXp = async (amount: number) => {
+  const addXp = async (amount: number, eventType: 'QUIZ_COMPLETED' | 'DAILY_MISSION' | 'POMODORO_COMPLETED' | 'SIMULATOR_CHALLENGE' | 'CALCULATOR_ANALYSIS' = 'QUIZ_COMPLETED') => {
     if (!user) return;
+    const previousUser = { ...user };
     const optimisticXp = user.xp + amount;
 
     setUser(prev => prev ? ({ ...prev, xp: optimisticXp }) : prev);
@@ -213,13 +222,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (auth.currentUser) {
       try {
         const activeToken = await auth.currentUser.getIdToken();
-        const res = await fetch('/api/user/add-xp', {
+        const res = await fetch('/api/user/claim-event', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${activeToken}`
           },
-          body: JSON.stringify({ amount })
+          body: JSON.stringify({
+            eventType,
+            eventId: `evt_${Date.now()}`
+          })
         });
 
         if (res.ok) {
@@ -227,9 +239,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (resData.currentXp !== undefined) {
             setUser(prev => prev ? ({ ...prev, xp: resData.currentXp }) : prev);
           }
+        } else {
+          console.warn("XP Claim failed on server. Rolling back optimistic XP.");
+          setUser(previousUser);
         }
       } catch (err) {
-        console.error("Error authoritatively adding XP on server:", err);
+        console.error("Network error claiming XP on server. Rolling back:", err);
+        setUser(previousUser);
       }
     } else if (token === 'demo-token') {
       const updatedGuest = {
@@ -242,6 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateProfile = async (fullName: string, avatar: string, literacyLevel?: string) => {
     if (!user) return;
+    const previousUser = { ...user };
     
     const updatedUser = {
       ...user,
@@ -255,7 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (auth.currentUser) {
       try {
         const activeToken = await auth.currentUser.getIdToken();
-        await fetch('/api/user/profile', {
+        const res = await fetch('/api/user/profile', {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -263,8 +280,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
           body: JSON.stringify({ fullName, avatar })
         });
+        if (!res.ok) {
+          console.warn("Profile sync failed on server. Rolling back.");
+          setUser(previousUser);
+        }
       } catch (err) {
-        console.error('Failed to sync profile to server API', err);
+        console.error('Failed to sync profile to server API. Rolling back:', err);
+        setUser(previousUser);
       }
     } else if (token === 'demo-token') {
       localStorage.setItem('guest_profile', JSON.stringify(updatedUser));

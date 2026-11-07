@@ -1181,7 +1181,7 @@ export function SimulationPage() {
             {currentNews}
           </motion.div>
         </div>
-        <span className="text-[10px] font-bold text-slate-400 px-2 shrink-0 border-l border-slate-700">
+        <span className="text-[10px] font-bold text-slate-400 px-2 shrink-0 border-l border-slate-700 hidden sm:inline">
           IDX & US Live Feed
         </span>
       </div>
@@ -1223,7 +1223,7 @@ export function SimulationPage() {
               <span className="text-2xl sm:text-3xl font-black text-teal-400 tracking-tight">
                 Rp {netWorth.toLocaleString('id-ID')}
               </span>
-              <div className="flex justify-between text-[10px] font-bold text-slate-300 pt-2 border-t border-white/5">
+              <div className="flex flex-col sm:flex-row sm:justify-between text-[10px] font-bold text-slate-300 pt-2 border-t border-white/5 gap-0.5 sm:gap-2">
                 <span>Tunai: Rp {cashIDR.toLocaleString('id-ID')}</span>
                 <span>Tunai USD: ${cashUSD.toLocaleString('en-US')}</span>
               </div>
@@ -1488,7 +1488,7 @@ export function SimulationPage() {
               </div>
 
               {/* Chart Overlay compare tools and Indicators */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
                 {/* Real-time & Simulator toggler */}
                 <div className="flex gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl mr-2">
                   <button

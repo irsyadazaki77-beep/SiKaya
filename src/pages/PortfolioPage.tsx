@@ -830,7 +830,7 @@ export function PortfolioPage() {
                 <form onSubmit={handleAddManualAsset} className="p-5 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
                   <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Formulir Kepemilikan Aset Baru</h4>
                   
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Simbol / Kode</label>
                       <input 
@@ -871,7 +871,7 @@ export function PortfolioPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Harga Beli Rata-Rata (Rp)</label>
                       <input 

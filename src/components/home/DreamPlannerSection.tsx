@@ -32,33 +32,36 @@ export function DreamPlannerSection() {
   const moneySaved = (monthlySavingsNeeded * goalMonths) - totalWithInvestment;
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 transition-colors relative">
+    <section className="py-16 sm:py-20 bg-gradient-to-b from-white to-slate-50 dark:from-slate-900 dark:to-slate-950 transition-colors relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-14">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14">
           <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 text-xs font-bold mb-4 border border-indigo-100 dark:border-indigo-900/40 shadow-sm">
             <Zap className="w-4 h-4 text-indigo-500 animate-bounce" /> WIDGET INTERAKTIF
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-4 font-display">
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-3 sm:mb-4 font-display">
             Gen Z <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-indigo-600">Dream Planner</span>
           </h2>
-          <p className="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm">
+          <p className="text-slate-500 dark:text-slate-400 font-medium text-xs sm:text-sm px-2">
             Tentukan target impianmu, atur waktunya, dan lihat perbedaan mencolok menabung biasa vs diinvestasikan secara pintar.
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden grid md:grid-cols-12 transition-all">
           {/* Planner Left Panel: Inputs */}
-          <div className="p-6 sm:p-8 md:col-span-7 space-y-6">
+          <div className="p-5 sm:p-8 md:col-span-7 space-y-5 sm:space-y-6">
             <div>
-              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">Pilih Kategori Impianmu</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {(Object.keys(goalPresets) as Array<keyof typeof goalPresets>).map((key) => {
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3 sm:mb-4">Pilih Kategori Impianmu</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                {(Object.keys(goalPresets) as Array<keyof typeof goalPresets>).map((key, idx) => {
                   const isSelected = goalPreset === key;
+                  const isLast = idx === 4;
                   return (
                     <button
                       key={key}
                       onClick={() => selectPreset(key)}
-                      className={`px-3 py-2.5 text-xs font-bold rounded-xl transition-all text-left border relative overflow-hidden cursor-pointer ${
+                      className={`px-3 py-2 sm:py-2.5 text-xs font-bold rounded-xl transition-all text-left border relative overflow-hidden cursor-pointer ${
+                        isLast ? 'col-span-2 sm:col-span-1' : ''
+                      } ${
                         isSelected 
                           ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm' 
                           : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
@@ -94,7 +97,7 @@ export function DreamPlannerSection() {
                   type="text"
                   value={customGoalName}
                   onChange={(e) => setCustomGoalName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all"
                   placeholder="Contoh: Liburan ke Jepang"
                 />
               </div>
@@ -153,23 +156,22 @@ export function DreamPlannerSection() {
           </div>
 
           {/* Planner Right Panel: Projections & Advice */}
-          <div className="p-6 sm:p-8 md:col-span-5 bg-slate-900 dark:bg-slate-950 text-white flex flex-col justify-between relative overflow-hidden">
-            
-            <div className="space-y-6 relative z-10">
+          <div className="p-5 sm:p-8 md:col-span-5 bg-slate-900 dark:bg-slate-950 text-white flex flex-col justify-between relative overflow-hidden">
+            <div className="space-y-5 sm:space-y-6 relative z-10">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-teal-400 bg-teal-400/10 px-2 py-0.5 rounded">Proyeksi Rencana</span>
-                <h4 className="text-xl font-bold mt-3 leading-snug font-display">{customGoalName || 'Impianmu'}</h4>
+                <h4 className="text-lg sm:text-xl font-bold mt-2 sm:mt-3 leading-snug font-display">{customGoalName || 'Impianmu'}</h4>
               </div>
  
-              <div className="space-y-5">
-                <div className="border-l-2 border-slate-700 pl-4 py-1">
-                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mb-1 block">Cara 1: Tabungan Biasa (0% Bunga)</p>
-                  <p className="text-lg font-bold">Rp {monthlySavingsNeeded.toLocaleString('id-ID')} <span className="text-sm font-normal text-slate-400">/ bln</span></p>
+              <div className="space-y-4 sm:space-y-5">
+                <div className="border-l-2 border-slate-700 pl-3 sm:pl-4 py-1">
+                  <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mb-0.5 block">Cara 1: Tabungan Biasa (0% Bunga)</p>
+                  <p className="text-base sm:text-lg font-bold">Rp {monthlySavingsNeeded.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-400">/ bln</span></p>
                 </div>
  
-                <div className="border-l-2 border-teal-500 pl-4 py-1">
-                  <p className="text-[10px] text-teal-400 font-semibold uppercase tracking-widest mb-1 block">Cara 2: Investasi Pintar (~8% CAGR)</p>
-                  <p className="text-lg font-bold text-teal-400">Rp {investingNeeded.toLocaleString('id-ID')} <span className="text-sm font-normal text-slate-400">/ bln</span></p>
+                <div className="border-l-2 border-teal-500 pl-3 sm:pl-4 py-1">
+                  <p className="text-[10px] text-teal-400 font-semibold uppercase tracking-widest mb-0.5 block">Cara 2: Investasi Pintar (~8% CAGR)</p>
+                  <p className="text-base sm:text-lg font-bold text-teal-400">Rp {investingNeeded.toLocaleString('id-ID')} <span className="text-xs font-normal text-slate-400">/ bln</span></p>
                 </div>
               </div>
  
@@ -178,23 +180,23 @@ export function DreamPlannerSection() {
                 animate={{ opacity: 1, scale: 1 }}
                 key={moneySaved}
                 transition={{ type: "spring", stiffness: 120, damping: 15 }}
-                className="bg-white/5 rounded-2xl p-4 border border-white/10 space-y-2"
+                className="bg-white/5 rounded-2xl p-3.5 sm:p-4 border border-white/10 space-y-1.5"
               >
                 <p className="text-[10px] font-bold text-teal-400 flex items-center gap-1.5 uppercase tracking-widest">
-                  <Sparkles className="w-3.5 h-3.5 text-teal-400" /> Sikaya Smart Tip
+                  <Sparkles className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Sikaya Smart Tip
                 </p>
-                <p className="text-sm font-medium leading-relaxed text-slate-300">
+                <p className="text-xs sm:text-sm font-medium leading-relaxed text-slate-300">
                   Dengan berinvestasi secara disiplin, kamu menghemat sekitar <span className="text-teal-400 font-bold">Rp {moneySaved.toLocaleString('id-ID')}</span> karena uangmu bertumbuh secara otomatis!
                 </p>
               </motion.div>
             </div>
  
-            <div className="mt-8 pt-5 border-t border-white/10 flex items-center justify-between relative z-10">
+            <div className="mt-6 sm:mt-8 pt-4 sm:pt-5 border-t border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 relative z-10">
               <div>
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-widest mb-0.5">Pelajari Caranya di</p>
-                <p className="text-sm font-bold text-teal-400">Kelas Classroom</p>
+                <p className="text-xs sm:text-sm font-bold text-teal-400">Kelas Classroom</p>
               </div>
-              <Link to="/belajar" className="px-5 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl transition-colors font-semibold text-sm flex items-center gap-1.5">
+              <Link to="/belajar" className="w-full sm:w-auto px-4 sm:px-5 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl transition-colors font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-98">
                 Mulai Belajar <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

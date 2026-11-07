@@ -385,7 +385,7 @@ export function AiAdvisorPage() {
             <p className="text-xs text-slate-500">Sesuaikan gaya analisa dengan preferensi Anda</p>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2 w-full md:w-auto">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full md:w-auto">
           <button 
             type="button"
             onClick={() => setSelectedMood('Profesional')}
@@ -587,7 +587,7 @@ export function AiAdvisorPage() {
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ type: "spring", stiffness: 80, damping: 15 }}
-          className="lg:col-span-7 flex flex-col h-[750px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden"
+          className="lg:col-span-7 flex flex-col h-[560px] sm:h-[680px] lg:h-[750px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm overflow-hidden"
         >
           {/* Header */}
           <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
@@ -716,7 +716,7 @@ export function AiAdvisorPage() {
                       </div>
 
                       {/* Quick Metadata summary for PDF export visibility */}
-                      <div className="mb-6 p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-3 gap-4 text-xs">
+                      <div className="mb-6 p-3 sm:p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 text-xs">
                         <div>
                           <span className="block text-slate-500 mb-1">Pemasukan</span>
                           <span className="font-semibold text-slate-900 dark:text-white">Rp {numericIncome.toLocaleString('id-ID')}</span>

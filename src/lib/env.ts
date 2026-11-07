@@ -30,7 +30,8 @@ export function validateEnvironment(): EnvConfig {
   }
 
   // Check Firebase configuration
-  const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || (firebaseConfig as any)?.projectId;
+  const rawProjectId = (firebaseConfig as any)?.projectId;
+  const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || (rawProjectId && !rawProjectId.includes('YOUR_FIREBASE_PROJECT_ID') ? rawProjectId : undefined);
 
   if (!firebaseProjectId && isProduction) {
     errors.push("Firebase configuration is missing projectId. Ensure firebase-applet-config.json or FIREBASE_PROJECT_ID is provided.");

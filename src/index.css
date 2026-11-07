@@ -15,10 +15,18 @@
   --color-brand-purple: #7c3aed;
 }
 
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -26,11 +34,49 @@ body {
   overflow-x: hidden;
   background-color: #f8fafc;
   color: #0f172a;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .dark body {
   background-color: #09090b;
   color: #f8fafc;
+}
+
+/* Mobile Safe Area Insets for iOS Notch & Android Gesture Bars */
+.safe-area-pt {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+
+.safe-area-pb {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+.safe-area-bottom-bar {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Native Mobile Smooth Scrolling */
+.overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent iOS Safari input auto-zoom */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Scrollbar Hide for Mobile Horizontal Tab Bars */
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Accessible focus visible outlines */
@@ -89,11 +135,11 @@ body {
 
 /* UI Design Tokens */
 .ui-card {
-  @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 sm:p-6 shadow-sm transition-colors duration-200;
+  @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 sm:p-6 shadow-sm transition-colors duration-200;
 }
 
 .ui-card-flat {
-  @apply bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-4 transition-colors duration-200;
+  @apply bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 sm:p-4 transition-colors duration-200;
 }
 
 .ui-card-title {
@@ -104,26 +150,26 @@ body {
   @apply text-sm text-slate-500 dark:text-slate-400 mt-1;
 }
 
-/* Button Standard System */
+/* Button Standard System with ergonomic touch targets */
 .ui-btn-primary {
-  @apply h-10 px-4 rounded-lg text-sm font-semibold bg-teal-600 hover:bg-teal-700 text-white transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
+  @apply min-h-[44px] h-10 px-4 rounded-xl text-sm font-semibold bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm select-none;
 }
 
 .ui-btn-secondary {
-  @apply h-10 px-4 rounded-lg text-sm font-semibold bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm;
+  @apply min-h-[44px] h-10 px-4 rounded-xl text-sm font-semibold bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 shadow-sm select-none;
 }
 
 .ui-btn-accent {
-  @apply h-10 px-4 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 shadow-sm;
+  @apply min-h-[44px] h-10 px-4 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 shadow-sm select-none;
 }
 
 .ui-btn-outline {
-  @apply h-10 px-4 rounded-lg text-sm font-semibold border border-teal-600/30 dark:border-teal-400/30 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-colors active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2;
+  @apply min-h-[44px] h-10 px-4 rounded-xl text-sm font-semibold border border-teal-600/30 dark:border-teal-400/30 text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-all active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 select-none;
 }
 
 /* Input Standard System */
 .ui-input {
-  @apply h-10 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors w-full;
+  @apply min-h-[44px] h-11 px-3.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-colors w-full;
 }
 
 /* Badge Standard System */
@@ -150,4 +196,3 @@ body {
 .ui-badge-rose {
   @apply bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200/50 dark:border-rose-500/20;
 }
-

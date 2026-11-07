@@ -300,62 +300,62 @@ export function MobileNavigation({
       </AnimatePresence>
 
       {/* Mobile Fixed Bottom Navigation Bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 px-2 py-1.5 flex items-center justify-around shadow-2xl safe-area-pb">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 px-2 pt-1 safe-area-bottom-bar flex items-center justify-around shadow-2xl select-none">
         <Link
           to="/"
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1 px-3 rounded-xl transition-all active:scale-95 ${
             location.pathname === '/' 
               ? 'text-teal-600 dark:text-teal-400 font-extrabold' 
               : 'text-slate-500 dark:text-slate-400 font-medium'
           }`}
         >
-          <Home className="w-4 h-4" />
-          <span className="text-[9px]">Beranda</span>
+          <Home className="w-5 h-5" />
+          <span className="text-[10px]">Beranda</span>
         </Link>
         <Link
           to="/belajar"
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1 px-3 rounded-xl transition-all active:scale-95 ${
             location.pathname === '/belajar' 
               ? 'text-teal-600 dark:text-teal-400 font-extrabold' 
               : 'text-slate-500 dark:text-slate-400 font-medium'
           }`}
         >
-          <BookOpen className="w-4 h-4" />
-          <span className="text-[9px]">Belajar</span>
+          <BookOpen className="w-5 h-5" />
+          <span className="text-[10px]">Belajar</span>
         </Link>
         <Link
           to="/simulasi"
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all relative ${
+          className={`flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1 px-3 rounded-xl transition-all relative active:scale-95 ${
             location.pathname === '/simulasi' || location.pathname === '/life-simulator'
               ? 'text-emerald-600 dark:text-emerald-400 font-extrabold' 
               : 'text-slate-500 dark:text-slate-400 font-medium'
           }`}
         >
-          <Activity className="w-4 h-4" />
-          <span className="text-[9px]">Simulasi</span>
-          <span className="absolute top-0 right-2 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+          <Activity className="w-5 h-5" />
+          <span className="text-[10px]">Simulasi</span>
+          <span className="absolute top-1 right-2.5 w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
         </Link>
         <Link
           to="/portfolio"
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1 px-3 rounded-xl transition-all active:scale-95 ${
             location.pathname === '/portfolio' || location.pathname === '/features'
               ? 'text-teal-600 dark:text-teal-400 font-extrabold' 
               : 'text-slate-500 dark:text-slate-400 font-medium'
           }`}
         >
-          <Wallet className="w-4 h-4" />
-          <span className="text-[9px]">Keuangan</span>
+          <Wallet className="w-5 h-5" />
+          <span className="text-[10px]">Keuangan</span>
         </Link>
         <Link
           to="/ai-advisor"
-          className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center gap-0.5 min-h-[48px] py-1 px-3 rounded-xl transition-all active:scale-95 ${
             location.pathname === '/ai-advisor' 
               ? 'text-indigo-600 dark:text-indigo-400 font-extrabold' 
               : 'text-slate-500 dark:text-slate-400 font-medium'
           }`}
         >
-          <Bot className="w-4 h-4 text-indigo-500" />
-          <span className="text-[9px]">AI Asisten</span>
+          <Bot className="w-5 h-5 text-indigo-500" />
+          <span className="text-[10px]">AI Asisten</span>
         </Link>
       </div>
     </>

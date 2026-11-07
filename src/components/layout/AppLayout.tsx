@@ -38,7 +38,7 @@ export function AppLayout() {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-teal-100 selection:text-teal-900 dark:selection:bg-teal-950 dark:selection:text-teal-200 antialiased flex flex-col transition-colors duration-300">
+    <div className="min-h-screen min-h-[100dvh] bg-slate-50/50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-teal-100 selection:text-teal-900 dark:selection:bg-teal-950 dark:selection:text-teal-200 antialiased flex flex-col transition-colors duration-300">
       {/* Header Bar */}
       <Header
         isScrolled={isScrolled}
@@ -81,7 +81,7 @@ export function AppLayout() {
       <OnboardingModal />
 
       {/* Main Routed Content */}
-      <main className="flex-1 flex flex-col overflow-hidden pb-16 md:pb-0">
+      <main className="flex-1 flex flex-col overflow-x-hidden pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}

@@ -22,7 +22,7 @@ interface AuthContextType {
   loginAsGuest: () => Promise<void>;
   logout: () => void;
   completeModule: (moduleId: string, xpReward?: number) => Promise<void>;
-  addXp: (amount: number) => Promise<void>;
+  addXp: (amount: number, eventType?: 'QUIZ_COMPLETED' | 'DAILY_MISSION' | 'POMODORO_COMPLETED' | 'SIMULATOR_CHALLENGE' | 'CALCULATOR_ANALYSIS') => Promise<void>;
   updateProfile: (fullName: string, avatar: string, literacyLevel?: string) => Promise<void>;
 }
 

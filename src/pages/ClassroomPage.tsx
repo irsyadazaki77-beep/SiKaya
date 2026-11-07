@@ -647,7 +647,7 @@ export function ClassroomPage() {
         setCompletedQuizzes(updatedQuizzes);
         localStorage.setItem('completed_quizzes', JSON.stringify(updatedQuizzes));
         if (reward > 0) {
-          addXp(reward);
+          addXp(20, 'QUIZ_COMPLETED');
           toast.success(`Selamat! Anda menyelesaikan kuis dan mendapatkan +${reward} XP!`);
         }
       } else {

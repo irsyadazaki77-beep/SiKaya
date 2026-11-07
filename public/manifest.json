@@ -3,18 +3,23 @@
   "name": "SiKaya - Platform Edukasi Finansial & Simulasi Investasi",
   "icons": [
     {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
       "src": "/icon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icon.png",
+      "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
   "start_url": "/",
-  "background_color": "#0f172a",
+  "background_color": "#09090b",
   "theme_color": "#0d9488",
   "display": "standalone",
   "orientation": "portrait",

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bot, Send, Sparkles, AlertCircle, Loader2, DollarSign, Wallet, ShieldCheck, ChevronDown, History, ShieldAlert, HeartHandshake, Skull, Download, HeartPulse } from 'lucide-react';
+import { Bot, Send, Sparkles, AlertCircle, Loader2, DollarSign, Wallet, ShieldCheck, ChevronDown, History, ShieldAlert, HeartHandshake, Skull, Download, HeartPulse, Mic, MicOff, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import { useAuth } from '../context/AuthContext';
@@ -89,6 +89,96 @@ export function AiAdvisorPage() {
   ]);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Voice Speech Recognition State
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+      }
+    };
+  }, []);
+
+  const handleToggleVoiceInput = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error('Browser Anda belum mendukung input suara. Gunakan Google Chrome atau Safari.');
+      return;
+    }
+
+    if (isListening) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+      }
+      setIsListening(false);
+      return;
+    }
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.lang = 'id-ID';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.info('🎙️ Mendengarkan suara Anda... Silakan berbicara.');
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results?.[0]?.[0]?.transcript;
+        if (transcript) {
+          setQuestion((prev) => (prev ? `${prev} ${transcript}` : transcript));
+          toast.success('Suara berhasil dikenali!');
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.warn('Speech recognition error:', event.error);
+        setIsListening(false);
+        if (event.error !== 'no-speech') {
+          toast.error(`Gagal mendeteksi suara: ${event.error}`);
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err) {
+      console.error('Speech recognition start failed:', err);
+      setIsListening(false);
+    }
+  };
+
+  const handleSyncProfile = () => {
+    const saved = localStorage.getItem('sikaya_fin_profile');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFinProfile(parsed);
+        if (parsed.monthlyIncome) setIncomeInput(parsed.monthlyIncome.toLocaleString('id-ID'));
+        if (parsed.monthlyExpenses) setExpensesInput(parsed.monthlyExpenses.toLocaleString('id-ID'));
+        if (parsed.totalCash) setSavingsInput(parsed.totalCash.toLocaleString('id-ID'));
+        if (parsed.totalDebt) setDebtInput(parsed.totalDebt.toLocaleString('id-ID'));
+        toast.success('Profil finansial berhasil disinkronkan dari Dasbor!');
+      } catch (e) {
+        toast.error('Gagal membaca profil dari Dasbor.');
+      }
+    } else {
+      toast.info('Profil Dasbor belum diisi. Menggunakan nilai default.');
+    }
+  };
+
 
   // Clean up any pending abort controller on unmount
   useEffect(() => {

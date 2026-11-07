@@ -26,11 +26,7 @@ export function validateEnvironment(): EnvConfig {
   // Check Gemini API Key
   const geminiApiKey = process.env.GEMINI_API_KEY?.trim();
   if (!geminiApiKey) {
-    if (isProduction) {
-      errors.push("GEMINI_API_KEY is required in production for AI Advisor features.");
-    } else {
-      warnings.push("GEMINI_API_KEY is not set. /api/chat calls will fail until configured.");
-    }
+    warnings.push("GEMINI_API_KEY is not configured. /api/chat will report configuration required until set in Vercel environment variables.");
   }
 
   // Check Firebase configuration
@@ -45,7 +41,7 @@ export function validateEnvironment(): EnvConfig {
   console.log(`🚀 SiKaya Backend Initializing`);
   console.log(`   - Environment: ${nodeEnv}`);
   console.log(`   - Port: ${port}`);
-  console.log(`   - Gemini API Key: ${geminiApiKey ? "Configured (Protected)" : "Missing"}`);
+  console.log(`   - Gemini API Key: ${geminiApiKey ? "Configured (Protected)" : "Missing (Fallback Active)"}`);
   console.log(`   - Firebase Project: ${firebaseProjectId || "Unspecified"}`);
   console.log("==========================================");
 

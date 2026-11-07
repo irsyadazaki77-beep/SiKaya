@@ -16,6 +16,7 @@ export const aiService = {
       body: JSON.stringify({
         question: payload.question,
         mood: payload.mood || 'Profesional',
+        history: payload.history || [],
         profile: {
           income: payload.profile?.monthlyIncome || 0,
           expenses: payload.profile?.monthlyExpenses || 0,
@@ -27,6 +28,7 @@ export const aiService = {
           investments: payload.profile?.totalInvestments || 0,
           healthScore: 75,
           healthGrade: 'B',
+          maritalStatus: (payload.profile as any)?.maritalStatus || 'Lajang',
           riskTolerance: payload.profile?.riskTolerance || 'Moderat',
           goals: payload.profile?.goals?.join(', ') || 'Kebebasan finansial'
         }
@@ -42,7 +44,7 @@ export const aiService = {
     const data = await res.json();
     return {
       answer: data.reply || data.answer || 'Maaf, tidak ada respon dari asisten.',
-      disclaimer: data.disclaimer || 'Edukasi literasi finansial. Bukan rekomendasi investasi.',
+      disclaimer: data.disclaimer || 'Edukasi literasi finansial berbasis metodologi CFP. Bukan rekomendasi investasi.',
       suggestedFollowUps: data.suggestedFollowUps || []
     };
   }

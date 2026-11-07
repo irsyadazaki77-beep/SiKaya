@@ -23,6 +23,7 @@ import {
   Volume2
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { PageHeader } from '../components/PageHeader';
 
 interface Comment {
@@ -56,6 +57,7 @@ interface Shout {
 
 export function CommunityPage() {
   const { toast } = useToast();
+  const { user, token } = useAuth();
   
   // Search and Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,30 +149,53 @@ export function CommunityPage() {
     { name: 'Rian_HODL', badge: 'Crypto Scout 🚀', score: '740 pts', avatar: '🐯', color: 'text-rose-500 bg-rose-50 dark:bg-rose-950/30' }
   ];
 
-  // Load state from localStorage
+  // Load community state from API with fallback to localStorage
   useEffect(() => {
-    const savedPosts = localStorage.getItem('sikaya_forum_posts_v2');
-    if (savedPosts) {
-      try {
-        setPosts(JSON.parse(savedPosts));
-      } catch (e) {
+    const fetchCommunityData = async () => {
+      // 1. Instant local render
+      const savedPosts = localStorage.getItem('sikaya_forum_posts_v2');
+      if (savedPosts) {
+        try { setPosts(JSON.parse(savedPosts)); } catch (e) { setPosts(defaultPosts); }
+      } else {
         setPosts(defaultPosts);
       }
-    } else {
-      setPosts(defaultPosts);
-    }
 
-    const savedShouts = localStorage.getItem('sikaya_shoutbox_v2');
-    if (savedShouts) {
-      try {
-        setShouts(JSON.parse(savedShouts));
-      } catch (e) {
+      const savedShouts = localStorage.getItem('sikaya_shoutbox_v2');
+      if (savedShouts) {
+        try { setShouts(JSON.parse(savedShouts)); } catch (e) { setShouts(defaultShouts); }
+      } else {
         setShouts(defaultShouts);
       }
-    } else {
-      setShouts(defaultShouts);
-    }
-  }, []);
+
+      // 2. Live Cloud fetch
+      try {
+        const [postsRes, shoutsRes] = await Promise.all([
+          fetch('/api/community/posts'),
+          fetch('/api/community/shouts')
+        ]);
+
+        if (postsRes.ok) {
+          const pData = await postsRes.json();
+          if (pData.posts && Array.isArray(pData.posts) && pData.posts.length > 0) {
+            setPosts(pData.posts);
+            localStorage.setItem('sikaya_forum_posts_v2', JSON.stringify(pData.posts));
+          }
+        }
+
+        if (shoutsRes.ok) {
+          const sData = await shoutsRes.json();
+          if (sData.shouts && Array.isArray(sData.shouts) && sData.shouts.length > 0) {
+            setShouts(sData.shouts);
+            localStorage.setItem('sikaya_shoutbox_v2', JSON.stringify(sData.shouts));
+          }
+        }
+      } catch (err) {
+        console.warn('Community live sync fallback to local cache:', err);
+      }
+    };
+
+    fetchCommunityData();
+  }, [token]);
 
   const savePostsToLocalStorage = (updated: Post[]) => {
     setPosts(updated);
@@ -191,7 +216,7 @@ export function CommunityPage() {
   };
 
   // Create Post
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postContent.trim()) {
       toast.error('Konten postingan tidak boleh kosong!');
@@ -203,22 +228,47 @@ export function CommunityPage() {
       return;
     }
 
-    const finalAuthor = postAuthor.trim() || 'Anonim Kaya';
+    const finalAuthor = user?.fullName || postAuthor.trim() || 'Anonim Kaya';
+    const finalAvatar = user?.avatar || selectedAvatar;
+    const finalTags = postTags.length > 0 ? postTags : ['GenerasiKaya'];
+
     const newPost: Post = {
       id: Math.random().toString(36).substring(2, 9),
       author: finalAuthor,
-      avatar: selectedAvatar,
+      avatar: finalAvatar,
       time: 'Baru saja',
       content: postContent.trim(),
       likes: 0,
-      tags: postTags.length > 0 ? postTags : ['GenerasiKaya'],
+      tags: finalTags,
       comments: [],
       isCustom: true
     };
 
     const updated = [newPost, ...posts];
     savePostsToLocalStorage(updated);
-    
+
+    // Sync to cloud API if authenticated
+    if (token && token !== 'demo-token') {
+      try {
+        const res = await fetch('/api/community/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ content: postContent.trim(), tags: finalTags })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.post) {
+            setPosts(prev => [json.post, ...prev.filter(p => p.id !== newPost.id)]);
+          }
+        }
+      } catch (err) {
+        console.error('Error saving post to cloud:', err);
+      }
+    }
+
     // Reset posting state
     setPostContent('');
     setPostTags([]);
@@ -263,10 +313,17 @@ export function CommunityPage() {
       return post;
     });
     savePostsToLocalStorage(updated);
+
+    if (token && token !== 'demo-token') {
+      fetch(`/api/community/posts/${postId}/like`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).catch(err => console.error('Error recording like:', err));
+    }
   };
 
   // Handle Post Comment
-  const handleAddComment = (postId: string) => {
+  const handleAddComment = async (postId: string) => {
     if (!newCommentText.trim()) {
       toast.error('Komentar tidak boleh kosong!');
       return;
@@ -277,11 +334,12 @@ export function CommunityPage() {
       return;
     }
 
-    const commentAuthorName = newCommentAuthor.trim() || 'Pembaca Pintar';
+    const commentAuthorName = user?.fullName || newCommentAuthor.trim() || 'Pembaca Pintar';
+    const commentAvatar = user?.avatar || '👤';
     const newCommentObj: Comment = {
       id: Math.random().toString(36).substring(2, 9),
       author: commentAuthorName,
-      avatar: '👤',
+      avatar: commentAvatar,
       content: newCommentText.trim(),
       time: 'Baru saja'
     };
@@ -297,12 +355,25 @@ export function CommunityPage() {
     });
 
     savePostsToLocalStorage(updated);
+    const commentToSend = newCommentText.trim();
     setNewCommentText('');
+
+    if (token && token !== 'demo-token') {
+      fetch(`/api/community/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ content: commentToSend })
+      }).catch(err => console.error('Error posting comment:', err));
+    }
+
     toast.success('Komentar ditambahkan!');
   };
 
   // Handle Shout Box Submit
-  const handleSendShout = (e: React.FormEvent) => {
+  const handleSendShout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!shoutText.trim()) return;
 
@@ -312,18 +383,32 @@ export function CommunityPage() {
     }
 
     const timeString = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-    const finalAuthor = shoutAuthor.trim() || 'Warga_Kaya';
+    const finalAuthor = user?.fullName?.replace(/\s+/g, '_') || shoutAuthor.trim().replace(/\s+/g, '_') || 'Warga_Kaya';
+    const finalAvatar = user?.avatar || shoutAvatar;
     const newShout: Shout = {
       id: Math.random().toString(36).substring(2, 9),
-      author: finalAuthor.replace(/\s+/g, '_'),
-      avatar: shoutAvatar,
+      author: finalAuthor,
+      avatar: finalAvatar,
       text: shoutText.trim(),
       time: timeString
     };
 
-    const updated = [newShout, ...shouts].slice(0, 30); // limit to 30 shouts
+    const updated = [newShout, ...shouts].slice(0, 30);
     saveShoutsToLocalStorage(updated);
+    const shoutToSend = shoutText.trim();
     setShoutText('');
+
+    if (token && token !== 'demo-token') {
+      fetch('/api/community/shouts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ text: shoutToSend })
+      }).catch(err => console.error('Error posting shout:', err));
+    }
+
     toast.success('Shout dikirim!');
   };
 

@@ -1,7 +1,8 @@
 {
-  "name": "react-example",
+  "name": "sikaya",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Production-Hardened Multi-Asset Investment Education & Portfolio Analytics Platform",
   "type": "module",
   "main": "dist/server.cjs",
   "scripts": {

@@ -13,6 +13,7 @@ import { healthRouter } from '../routes/health.routes.ts';
 import { userRouter } from '../routes/user.routes.ts';
 import { aiRouter } from '../routes/ai.routes.ts';
 import { marketRouter } from '../routes/market.routes.ts';
+import { communityRouter } from '../routes/community.routes.ts';
 
 export async function createApp(isProduction: boolean): Promise<Express> {
   const app = express();
@@ -29,6 +30,7 @@ export async function createApp(isProduction: boolean): Promise<Express> {
   app.use('/api/user', authLimiter, userRouter);
   app.use('/api', aiRouter);
   app.use('/api', marketRouter);
+  app.use('/api/community', communityRouter);
 
   app.all('/api/*', notFoundHandler);
 

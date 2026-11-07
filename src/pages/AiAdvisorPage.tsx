@@ -313,7 +313,15 @@ export function AiAdvisorPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${activeToken}`
         },
-        body: JSON.stringify({ profile, question: question.trim(), mood: selectedMood }),
+        body: JSON.stringify({
+          profile,
+          question: question.trim(),
+          mood: selectedMood,
+          history: chatHistory.slice(0, 6).reverse().flatMap(item => [
+            { role: 'user', text: item.question },
+            { role: 'model', text: item.response }
+          ])
+        }),
         signal: controller.signal
       });
 

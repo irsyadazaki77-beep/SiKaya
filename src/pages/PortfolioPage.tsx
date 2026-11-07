@@ -156,17 +156,49 @@ export function PortfolioPage() {
 
   const TARGET_INVESTMENT = 100000000; // Rp 100.000.000
 
-  // Load manual assets on mount
+  // Load manual assets on mount & sync with Cloud Firestore
   useEffect(() => {
-    const saved = localStorage.getItem('sikaya_manual_assets');
-    if (saved) {
-      try {
-        setManualAssets(JSON.parse(saved));
-      } catch (e) {
-        console.error("Error loading manual assets:", e);
+    const loadAssets = async () => {
+      let localItems: ManualAsset[] = [];
+      const saved = localStorage.getItem('sikaya_manual_assets');
+      if (saved) {
+        try {
+          localItems = JSON.parse(saved);
+          setManualAssets(localItems);
+        } catch (e) {
+          console.error('Error loading manual assets from storage:', e);
+        }
       }
-    }
-  }, []);
+
+      if (token && token !== 'demo-token') {
+        try {
+          const res = await fetch('/api/user/manual-assets', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.assets && Array.isArray(data.assets) && data.assets.length > 0) {
+              setManualAssets(data.assets);
+              localStorage.setItem('sikaya_manual_assets', JSON.stringify(data.assets));
+            } else if (localItems.length > 0) {
+              fetch('/api/user/manual-assets', {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ assets: localItems })
+              }).catch(() => {});
+            }
+          }
+        } catch (cloudErr) {
+          console.warn('Could not sync cloud manual assets:', cloudErr);
+        }
+      }
+    };
+
+    loadAssets();
+  }, [token]);
 
   // Fetch virtual simulator assets if authenticated
   useEffect(() => {
@@ -219,10 +251,21 @@ export function PortfolioPage() {
     setIsLoading(false);
   };
 
-  // Save manual assets helper
+  // Save manual assets helper (localStorage + Cloud Firestore Sync)
   const saveManualAssets = (updated: ManualAsset[]) => {
     setManualAssets(updated);
     localStorage.setItem('sikaya_manual_assets', JSON.stringify(updated));
+
+    if (token && token !== 'demo-token') {
+      fetch('/api/user/manual-assets', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ assets: updated })
+      }).catch(err => console.error('Cloud save failed:', err));
+    }
   };
 
   const handleAddManualAsset = (e: React.FormEvent) => {

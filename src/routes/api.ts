@@ -8,7 +8,8 @@ import {
   CompleteModuleSchema,
   UserProfileUpdateSchema,
   CreateInvestmentSchema,
-  ClaimEventSchema
+  ClaimEventSchema,
+  SaveManualAssetsSchema
 } from '../lib/schemas.ts';
 
 export const apiRouter = express.Router();
@@ -228,5 +229,84 @@ apiRouter.post('/transactions', authenticate, profileMutationLimiter, async (req
   }
 });
 
-export default apiRouter;
+// 5. User Manual Portfolio Assets Sync (Cloud Persistence)
+apiRouter.get('/manual-assets', authenticate, async (req, res, next) => {
+  try {
+    const uid = req.user!.uid;
+    const docRef = adminDb.collection('userPortfolios').doc(uid);
+    const docSnap = await docRef.get();
 
+    if (!docSnap.exists) {
+      return res.json({ success: true, assets: [] });
+    }
+
+    const data = docSnap.data();
+    res.json({ success: true, assets: data?.manualAssets || [] });
+  } catch (error) {
+    next(error);
+  }
+});
+
+apiRouter.put('/manual-assets', authenticate, profileMutationLimiter, async (req, res, next) => {
+  try {
+    const uid = req.user!.uid;
+    const validated = SaveManualAssetsSchema.parse(req.body);
+
+    const docRef = adminDb.collection('userPortfolios').doc(uid);
+    await docRef.set(
+      {
+        userId: uid,
+        manualAssets: validated.assets,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Aset manual berhasil disinkronkan ke cloud.',
+      assets: validated.assets,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// 6. Global Leaderboard Endpoint (Realtime Learner Rankings)
+apiRouter.get('/leaderboard', async (req, res, next) => {
+  try {
+    const usersSnap = await adminDb
+      .collection('users')
+      .orderBy('xp', 'desc')
+      .limit(30)
+      .get();
+
+    const players = usersSnap.docs.map((docSnap, index) => {
+      const data = docSnap.data();
+      const xp = Number(data.xp) || 0;
+      let level = 'Pemula';
+      if (xp >= 10000) level = 'Grandmaster';
+      else if (xp >= 5000) level = 'Master';
+      else if (xp >= 2500) level = 'Diamond';
+      else if (xp >= 1000) level = 'Gold';
+      else if (xp >= 500) level = 'Silver';
+
+      return {
+        id: docSnap.id,
+        name: data.fullName || 'Warga SiKaya',
+        xp,
+        avatar: data.avatar || '🦊',
+        level,
+        title: data.title || 'Investor Cerdas 🎓',
+        rank: index + 1,
+        change: 'same' as const
+      };
+    });
+
+    res.json({ success: true, players });
+  } catch (error) {
+    next(error);
+  }
+});
+
+export default apiRouter;

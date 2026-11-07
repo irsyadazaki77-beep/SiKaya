@@ -72,6 +72,25 @@ export function LeaderboardPage() {
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'semua' | 'mingguan' | 'harian'>('semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTierFilter, setSelectedTierFilter] = useState<string>('Semua');
+  const [cloudPlayers, setCloudPlayers] = useState<Player[]>([]);
+
+  // Fetch Live Leaderboard from Firestore API
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const res = await fetch('/api/user/leaderboard');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.players && Array.isArray(data.players) && data.players.length > 0) {
+            setCloudPlayers(data.players);
+          }
+        }
+      } catch (err) {
+        console.warn('Leaderboard fallback to benchmark players:', err);
+      }
+    };
+    fetchLeaderboard();
+  }, [user?.xp]);
 
   // Claimed state from localStorage
   const [claimedMissions, setClaimedMissions] = useState<number[]>([]);
@@ -272,7 +291,11 @@ export function LeaderboardPage() {
     change: "up"
   };
 
-  const fullPlayersList: Player[] = [...basePlayers, currentUserObj];
+  const effectiveBasePlayers = cloudPlayers.length > 0 ? cloudPlayers : basePlayers;
+  const userAlreadyInList = effectiveBasePlayers.some(p => p.isCurrentUser || (user?.fullName && p.name === user.fullName));
+  const fullPlayersList: Player[] = userAlreadyInList
+    ? effectiveBasePlayers.map(p => (user?.fullName && p.name === user.fullName) ? { ...p, isCurrentUser: true, xp: Math.max(p.xp, currentUserXp), avatar: user?.avatar || p.avatar } : p)
+    : [...effectiveBasePlayers, currentUserObj];
   
   // Sort players descending based on XP
   const sortedLeaderboard = [...fullPlayersList].sort((a, b) => b.xp - a.xp);

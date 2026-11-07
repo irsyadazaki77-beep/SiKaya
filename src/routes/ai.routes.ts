@@ -25,9 +25,9 @@ aiRouter.post(['/chat', '/advisor/chat'], authenticate, aiChatLimiter, async (re
 
   try {
     const validatedBody = ChatRequestSchema.parse(req.body);
-    const { profile, question, mood } = validatedBody;
+    const { profile, question, mood, history } = validatedBody;
 
-    const result = await GeminiService.generateChatReply({ profile, question, mood }, userUid);
+    const result = await GeminiService.generateChatReply({ profile, question, mood, history }, userUid);
 
     res.json(result);
   } catch (error) {

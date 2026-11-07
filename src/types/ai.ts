@@ -20,9 +20,15 @@ export interface ChatHistory {
   updatedAt: string;
 }
 
+export interface ChatHistoryTurn {
+  role: 'user' | 'model' | 'assistant';
+  text: string;
+}
+
 export interface AIAdvisorRequest {
   question: string;
   mood?: ChatMood;
+  history?: ChatHistoryTurn[];
   profile?: Partial<FinancialProfile>;
 }
 

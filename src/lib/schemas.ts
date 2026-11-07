@@ -37,12 +37,18 @@ export const FinancialProfileSchema = z.object({
   goals: z.string().max(500).default('Mencapai Kestabilan Finansial')
 });
 
+export const ChatHistoryItemSchema = z.object({
+  role: z.enum(['user', 'model', 'assistant']),
+  text: z.string().max(8000)
+});
+
 export const ChatRequestSchema = z.object({
   question: z.string({ message: "Pertanyaan tidak boleh kosong" })
     .trim()
     .min(1, "Pertanyaan tidak boleh kosong")
     .max(2000, "Pertanyaan maksimal 2000 karakter"),
   mood: ChatMoodEnum.default('Profesional'),
+  history: z.array(ChatHistoryItemSchema).optional().default([]),
   profile: FinancialProfileSchema.optional().default({
     income: 0,
     expenses: 0,
@@ -103,4 +109,28 @@ export const UserProfileUpdateSchema = z.object({
   avatar: z.string().max(256).optional(),
   language: z.string().max(10).optional(),
   preferences: z.record(z.string(), z.unknown()).optional()
+});
+
+export const ManualAssetSchema = z.object({
+  id: z.string().min(1),
+  symbol: z.string().min(1).max(32),
+  name: z.string().min(1).max(128),
+  type: z.enum(['Saham', 'Reksa Dana', 'Kripto', 'Emas', 'Kas & Deposito', 'Lainnya']),
+  buyPrice: z.number().min(0),
+  currentPrice: z.number().min(0),
+  shares: z.number().positive(),
+  notes: z.string().max(500).optional()
+});
+
+export const SaveManualAssetsSchema = z.object({
+  assets: z.array(ManualAssetSchema).max(100)
+});
+
+export const CommunityPostSchema = z.object({
+  content: z.string().trim().min(3).max(2000),
+  tags: z.array(z.string().max(32)).max(5).default([])
+});
+
+export const CommunityCommentSchema = z.object({
+  content: z.string().trim().min(1).max(1000)
 });

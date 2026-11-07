@@ -18,10 +18,16 @@ export interface UserFinancialProfile {
   goals: string;
 }
 
+export interface ChatHistoryTurn {
+  role: 'user' | 'model' | 'assistant';
+  text: string;
+}
+
 export interface GeminiChatPayload {
   profile: UserFinancialProfile;
   question: string;
   mood: string;
+  history?: ChatHistoryTurn[];
 }
 
 export interface GeminiNormalizedResponse {
@@ -196,10 +202,30 @@ PETUNJUK EKSEKUSI RESPON:
 
   static async generateChatReply(payload: GeminiChatPayload, userUid: string): Promise<GeminiNormalizedResponse> {
     const ai = this.getClient();
-    const contents = this.buildUserContent(payload);
+    const userPrompt = this.buildUserContent(payload);
     const systemInstruction = this.getSystemInstruction();
 
-    Logger.info(`[Gemini Service] Sending CFP educational consultation request to gemini-3.8-flash`, { userUid, mood: payload.mood });
+    // Prepare multi-turn contents if history exists
+    let contents: any = userPrompt;
+    if (payload.history && payload.history.length > 0) {
+      const turns: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+      const recentHistory = payload.history.slice(-8);
+      for (const turn of recentHistory) {
+        if (!turn.text || !turn.text.trim()) continue;
+        const role = turn.role === 'model' || turn.role === 'assistant' ? 'model' : 'user';
+        turns.push({
+          role,
+          parts: [{ text: turn.text.trim() }]
+        });
+      }
+      turns.push({
+        role: 'user',
+        parts: [{ text: userPrompt }]
+      });
+      contents = turns;
+    }
+
+    Logger.info(`[Gemini Service] Sending CFP educational consultation request to gemini-3.8-flash (multi-turn turns: ${payload.history?.length || 0})`, { userUid, mood: payload.mood });
 
     const generatePromise = ai.models.generateContent({
       model: 'gemini-3.8-flash',

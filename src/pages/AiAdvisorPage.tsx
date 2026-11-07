@@ -26,6 +26,8 @@ export function AiAdvisorPage() {
   const [incomeInput, setIncomeInput] = useState<string>('8.500.000');
   const [savingsInput, setSavingsInput] = useState<string>('18.000.000');
   const [expensesInput, setExpensesInput] = useState<string>('5.200.000');
+  const [debtInput, setDebtInput] = useState<string>('850.000');
+  const [maritalStatus, setMaritalStatus] = useState<string>('Lajang');
   const [goals, setGoals] = useState<string>('Tabungan Rumah First-Time');
   const [riskTolerance, setRiskTolerance] = useState<string>('Moderat');
   const [selectedMood, setSelectedMood] = useState<'Profesional' | 'Savage' | 'Empathetic'>('Profesional');
@@ -40,8 +42,11 @@ export function AiAdvisorPage() {
         setIncomeInput(parsed.monthlyIncome.toLocaleString('id-ID'));
         setExpensesInput(parsed.monthlyExpenses.toLocaleString('id-ID'));
         setSavingsInput(parsed.emergencyFund.toLocaleString('id-ID'));
-        setGoals(parsed.goals.join(', ') || 'Tabungan Rumah');
-        setRiskTolerance(parsed.riskTolerance);
+        if (parsed.monthlyDebtPayment) {
+          setDebtInput(parsed.monthlyDebtPayment.toLocaleString('id-ID'));
+        }
+        setGoals(parsed.goals.join(', ') || 'Tabungan Rumah First-Time');
+        setRiskTolerance(parsed.riskTolerance || 'Moderat');
       } catch (e) {}
     }
   }, []);
@@ -51,11 +56,33 @@ export function AiAdvisorPage() {
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Initial example formatted according to CFP 4-part standard
+  const initialDefaultResponse = `### 1. 📊 Diagnosis Kilat
+- **Debt Service Ratio (DSR):** Cicilan utang saat ini Rp 850.000 atau **10.0%** dari penghasilan (ambang batas sehat < 30%).
+- **Kecukupan Dana Darurat:** Tabungan likuid Rp 18.000.000 mampu menopang **3.5 bulan** pengeluaran (kategori Lajang target ideal: 3 - 6x pengeluaran).
+
+### 2. 💡 Analisis & Simulasi Angka
+- Jika Anda mengambil cicilan baru (misal: gadget seharga **Rp 12.000.000** via paylater 12 bulan dengan bunga ~2.95%/bulan):
+  - Estimasi cicilan tambahan: **Rp 1.354.000 / bulan**.
+  - Total cicilan bulanan melonjak menjadi **Rp 2.204.000 / bulan** -> DSR Anda melesat ke **25.9%**.
+  - Total beban bunga ekstra yang terbuang: **Rp 4.248.000** (35.4% lebih mahal dari harga tunai).
+  - Kapasitas investasi bulanan Anda akan tergerus sebesar 45%.
+
+### 3. 🎯 3 Langkah Aksi Prioritas
+1. **Segera (Hari Ini / Minggu Ini):** Terapkan aturan *30-Day Delay Rule* sebelum membeli barang konsumtif non-esensial untuk menghindari godaan impulsif paylater.
+2. **Jangka Pendek (1 - 3 Bulan):** Lengkapi pos dana darurat hingga mencapai 6x pengeluaran (target Rp 31.200.000) dengan memindahkan surplus kas ke Reksadana Pasar Uang (RDPU) yang likuid (return ~4.5% - 5.5% net/tahun).
+3. **Jangka Panjang (> 6 Bulan):** Alokasikan minimal 20% gaji (Rp 1.700.000/bulan) ke instrumen diversifikasi (SBN Ritel 6.0% - 6.5% dan Reksa Dana Indeks) untuk mengakumulasi target tabungan rumah.
+
+### 4. 🔍 Pertanyaan Lanjutan yang Disarankan
+[SUGGESTION: Bagaimana membagi gaji Rp 8.500.000 dengan aturan 50/30/20?]
+[SUGGESTION: Rekomendasi instrumen investasi untuk profil risiko Moderat?]
+[SUGGESTION: Berapa target dana darurat jika nanti saya menikah?]`;
+
   // Stateful Chat Session logs
   const [chatHistory, setChatHistory] = useState<{question: string, response: string, mood: string, timestamp: string}[]>([
     {
       question: "Apakah aman beli HP cicilan paylater?",
-      response: "### 🚨 Manajemen Utang & Kredit\n\n- **Aturan 30%:** Total cicilanmu maksimal Rp 1.500.000 per bulan.\n- **Hindari Bunga Tinggi:** Paylater memiliki bunga tersembunyi yang sangat merugikan.",
+      response: initialDefaultResponse,
       mood: "Profesional",
       timestamp: "10:15 WIB"
     }
@@ -109,7 +136,7 @@ export function AiAdvisorPage() {
     "Apakah aman beli HP cicilan paylater?",
     "Berapa dana darurat ideal untuk saya?",
     "Rekomendasi investasi untuk profil moderat?",
-    "Bagaimana membagi gaji saya bulanan?"
+    "Bagaimana membagi gaji bulanan dengan aturan 50/30/20?"
   ], []);
 
   const handleChipClick = useCallback((text: string) => {
@@ -129,24 +156,56 @@ export function AiAdvisorPage() {
   const numericIncome = parseRawNumber(incomeInput);
   const numericExpenses = parseRawNumber(expensesInput);
   const numericSavings = parseRawNumber(savingsInput);
+  const numericDebt = parseRawNumber(debtInput);
 
-  // Financial Diagnostics (Memoized calculations)
+  // Financial Diagnostics (Memoized CFP calculations)
   const dtiRatio = useMemo(() => {
-    return numericIncome > 0 ? Math.round((numericExpenses / numericIncome) * 100) : 0;
-  }, [numericIncome, numericExpenses]);
+    return numericIncome > 0 ? Number(((numericDebt / numericIncome) * 100).toFixed(1)) : 0;
+  }, [numericIncome, numericDebt]);
 
   const savingsRate = useMemo(() => {
-    return numericIncome > 0 ? Math.round((numericSavings / numericIncome) * 100) : 0;
-  }, [numericIncome, numericSavings]);
+    const remaining = numericIncome - numericExpenses - numericDebt;
+    return numericIncome > 0 ? Math.round((Math.max(0, remaining) / numericIncome) * 100) : 0;
+  }, [numericIncome, numericExpenses, numericDebt]);
+
+  const emergencyMonths = useMemo(() => {
+    return numericExpenses > 0 ? (numericSavings / numericExpenses).toFixed(1) : '0';
+  }, [numericSavings, numericExpenses]);
+
+  const targetEmergencyMonths = useMemo(() => {
+    if (maritalStatus === 'Menikah') return 9;
+    if (maritalStatus.includes('Anak') || maritalStatus.includes('Freelancer') || maritalStatus.includes('Wirausaha')) return 12;
+    return 6;
+  }, [maritalStatus]);
 
   const dtiStatus = useMemo(() => {
-    if (dtiRatio > 50) {
-      return { label: "Bahaya", color: "text-rose-500 bg-rose-50 dark:bg-rose-900/20" };
-    } else if (dtiRatio > 35) {
-      return { label: "Peringatan", color: "text-amber-500 bg-amber-50 dark:bg-amber-900/20" };
+    if (dtiRatio > 40) {
+      return { label: "Bahaya / Kritis (>40%)", color: "text-rose-600 bg-rose-50 dark:bg-rose-900/20 border-rose-200" };
+    } else if (dtiRatio >= 30) {
+      return { label: "Waspada (30%-40%)", color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20 border-amber-200" };
     }
-    return { label: "Sangat Sehat", color: "text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20" };
+    return { label: "Sehat (<30%)", color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200" };
   }, [dtiRatio]);
+
+  const activeAnswerText = response || chatHistory[0]?.response || '';
+
+  const extractedSuggestions = useMemo(() => {
+    if (!activeAnswerText) return [];
+    const matches: string[] = [];
+    const regex = /\[SUGGESTION:\s*([^\]]+)\]/gi;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(activeAnswerText)) !== null) {
+      if (match[1]?.trim()) {
+        matches.push(match[1].trim());
+      }
+    }
+    return matches;
+  }, [activeAnswerText]);
+
+  const cleanMarkdownText = useMemo(() => {
+    if (!activeAnswerText) return '';
+    return activeAnswerText.replace(/\[SUGGESTION:\s*([^\]]+)\]/gi, '').trim();
+  }, [activeAnswerText]);
 
   const handleExportPDF = async () => {
     if (!reportRef.current) return;
@@ -229,10 +288,11 @@ export function AiAdvisorPage() {
         income: numericIncome,
         expenses: numericExpenses,
         emergencyFund: numericSavings,
-        cash: finProfile.totalCash,
-        investments: finProfile.totalInvestments,
-        totalDebt: finProfile.totalDebt,
-        monthlyDebt: finProfile.monthlyDebtPayment,
+        cash: finProfile.totalCash || numericSavings,
+        investments: finProfile.totalInvestments || 0,
+        totalDebt: finProfile.totalDebt || 0,
+        monthlyDebt: numericDebt,
+        maritalStatus,
         healthScore: healthDiag.overallScore,
         healthGrade: healthDiag.grade,
         goals,
@@ -307,32 +367,40 @@ export function AiAdvisorPage() {
       />
 
       {/* Mood Selector / Personality Selector Bar */}
-      <div className="max-w-4xl mx-auto mb-8 bg-white dark:bg-slate-900 rounded-2xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm relative z-10">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-teal-500 animate-pulse" />
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">Kepribadian AI:</p>
+      <div className="max-w-4xl mx-auto mb-8 bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm relative z-10">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-teal-50 dark:bg-teal-900/30 text-teal-600 rounded-xl">
+            <Sparkles className="w-4 h-4 animate-pulse" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-100">Mode Komunikasi AI</p>
+            <p className="text-xs text-slate-500">Sesuaikan gaya analisa dengan preferensi Anda</p>
+          </div>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="grid grid-cols-3 gap-2 w-full md:w-auto">
           <button 
             type="button"
             onClick={() => setSelectedMood('Profesional')}
-            className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-semibold rounded-xl border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${selectedMood === 'Profesional' ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'}`}
+            className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${selectedMood === 'Profesional' ? 'bg-indigo-50 border-indigo-300 text-indigo-700 dark:bg-indigo-900/40 dark:border-indigo-700 dark:text-indigo-300 shadow-sm ring-1 ring-indigo-400' : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'}`}
           >
-            <HeartHandshake className="w-4 h-4" /> Profesional
+            <span className="flex items-center gap-1.5 font-bold"><HeartHandshake className="w-3.5 h-3.5 text-indigo-500" /> Profesional</span>
+            <span className="text-[10px] opacity-75 font-normal">Objektif & Rasio</span>
           </button>
           <button 
             type="button"
             onClick={() => setSelectedMood('Savage')}
-            className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-semibold rounded-xl border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${selectedMood === 'Savage' ? 'bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400' : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'}`}
+            className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${selectedMood === 'Savage' ? 'bg-rose-50 border-rose-300 text-rose-700 dark:bg-rose-900/40 dark:border-rose-700 dark:text-rose-300 shadow-sm ring-1 ring-rose-400' : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'}`}
           >
-            <Skull className="w-4 h-4" /> Savage 🔥
+            <span className="flex items-center gap-1.5 font-bold"><Skull className="w-3.5 h-3.5 text-rose-500" /> Savage 🔥</span>
+            <span className="text-[10px] opacity-75 font-normal">Anti-FOMO/Paylater</span>
           </button>
           <button 
             type="button"
             onClick={() => setSelectedMood('Empathetic')}
-            className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-semibold rounded-xl border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${selectedMood === 'Empathetic' ? 'bg-teal-50 border-teal-200 text-teal-700 dark:bg-teal-900/30 dark:border-teal-800 dark:text-teal-400' : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'}`}
+            className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-all flex flex-col items-center justify-center gap-0.5 cursor-pointer ${selectedMood === 'Empathetic' ? 'bg-teal-50 border-teal-300 text-teal-700 dark:bg-teal-900/40 dark:border-teal-700 dark:text-teal-300 shadow-sm ring-1 ring-teal-400' : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'}`}
           >
-            <Bot className="w-4 h-4" /> Suportif 🤗
+            <span className="flex items-center gap-1.5 font-bold"><Bot className="w-3.5 h-3.5 text-teal-500" /> Suportif 🤗</span>
+            <span className="text-[10px] opacity-75 font-normal">Hangat & Bertahap</span>
           </button>
         </div>
       </div>
@@ -355,8 +423,8 @@ export function AiAdvisorPage() {
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="ui-card-title">Profil Finansialmu</h3>
-                  <p className="ui-card-sub">Data ini digunakan untuk analisis AI.</p>
+                  <h3 className="ui-card-title">Profil Finansial (CFP Standard)</h3>
+                  <p className="ui-card-sub">Data ini dijadikan acuan kalkulasi & simulasi AI.</p>
                 </div>
               </div>
               <div className="lg:hidden">
@@ -365,84 +433,142 @@ export function AiAdvisorPage() {
             </div>
   
             <div className={`${isProfileExpanded ? 'block' : 'hidden lg:block'} space-y-4`}>
-              <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Pemasukan Bulanan (Rp)</label>
+              <form className="space-y-3.5" onSubmit={(e) => e.preventDefault()}>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Pemasukan Bulanan (Rp)</label>
                   <input 
                     type="text" 
                     value={incomeInput}
                     onChange={(e) => setIncomeInput(formatRupiah(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Total Tabungan Saat Ini (Rp)</label>
-                  <input 
-                    type="text" 
-                    value={savingsInput}
-                    onChange={(e) => setSavingsInput(formatRupiah(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Pengeluaran Bulanan (Rp)</label>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Pengeluaran Bulanan (Rp)</label>
                   <input 
                     type="text" 
                     value={expensesInput}
                     onChange={(e) => setExpensesInput(formatRupiah(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Target Keuangan Terdekat</label>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Cicilan Utang Bulanan (Rp)</label>
+                    <span className="text-[10px] text-slate-500">Acuan DSR/DTI</span>
+                  </div>
+                  <input 
+                    type="text" 
+                    value={debtInput}
+                    onChange={(e) => setDebtInput(formatRupiah(e.target.value))}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Dana Darurat / Tabungan Likuid (Rp)</label>
+                  <input 
+                    type="text" 
+                    value={savingsInput}
+                    onChange={(e) => setSavingsInput(formatRupiah(e.target.value))}
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Status & Dependen</label>
+                    <select 
+                      value={maritalStatus}
+                      onChange={(e) => setMaritalStatus(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                    >
+                      <option value="Lajang">Lajang (Target 3-6x)</option>
+                      <option value="Menikah">Menikah (Target 6-9x)</option>
+                      <option value="Menikah + Anak">Menikah + Anak (Target 9-12x)</option>
+                      <option value="Wirausaha / Freelancer">Freelancer/Wirausaha (9-12x)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Profil Risiko</label>
+                    <select 
+                      value={riskTolerance}
+                      onChange={(e) => setRiskTolerance(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                    >
+                      <option value="Konservatif">Konservatif (Aman)</option>
+                      <option value="Moderat">Moderat (Seimbang)</option>
+                      <option value="Agresif">Agresif (Tinggi)</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target Finansial Terdekat</label>
                   <input 
                     type="text" 
                     value={goals}
                     onChange={(e) => setGoals(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
-                    placeholder="Contoh: Menikah, beli laptop..."
+                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
+                    placeholder="Contoh: DP Rumah, Beli Laptop, Bebas Utang..."
                   />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Profil Risiko</label>
-                  <select 
-                    value={riskTolerance}
-                    onChange={(e) => setRiskTolerance(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:bg-white dark:focus:bg-slate-950 transition-all text-slate-900 dark:text-white"
-                  >
-                    <option value="Konservatif">Konservatif (Cari Aman)</option>
-                    <option value="Moderat">Moderat (Seimbang)</option>
-                    <option value="Agresif">Agresif (Siap Rugi)</option>
-                  </select>
                 </div>
               </form>
             </div>
           </div>
 
-
-          {/* Diagnostics sidebar block */}
-          <div className="ui-card">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-              <ShieldAlert className="w-5 h-5 text-teal-600" /> Diagnostik Finansial Instan
+          {/* CFP Financial Diagnostics Card */}
+          <div className="ui-card space-y-4">
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-teal-600" />
+                Diagnostik CFP Benchmark
+              </span>
+              <span className="text-[10px] font-semibold text-teal-600 bg-teal-50 dark:bg-teal-900/30 px-2 py-0.5 rounded-full">
+                Standar OJK / CFP
+              </span>
             </h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+            
+            <div className="grid grid-cols-2 gap-3">
+              {/* DSR Card */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                 <div>
-                  <p className="text-xs font-medium text-slate-500">Rasio Belanja</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{dtiRatio}%</p>
+                  <p className="text-[11px] font-medium text-slate-500">Debt Service Ratio (DSR)</p>
+                  <p className="text-xl font-black text-slate-900 dark:text-white mt-1">{dtiRatio}%</p>
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-md mt-3 text-center w-full block ${dtiStatus.color}`}>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-md mt-2 text-center w-full block border ${dtiStatus.color}`}>
                   {dtiStatus.label}
                 </span>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 flex flex-col justify-between">
+
+              {/* Emergency Fund Card */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-col justify-between">
                 <div>
-                  <p className="text-xs font-medium text-slate-500">Savings Rate</p>
-                  <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{savingsRate}%</p>
+                  <p className="text-[11px] font-medium text-slate-500">Kecukupan Dana Darurat</p>
+                  <p className="text-xl font-black text-slate-900 dark:text-white mt-1">{emergencyMonths}x <span className="text-xs font-normal text-slate-500">pengeluaran</span></p>
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-md mt-3 text-center w-full block ${savingsRate >= 20 ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
-                  {savingsRate >= 20 ? 'Sangat Bagus' : 'Kurang Sehat'}
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-md mt-2 text-center w-full block border ${Number(emergencyMonths) >= targetEmergencyMonths ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'}`}>
+                  Target: {targetEmergencyMonths}x ({maritalStatus})
                 </span>
+              </div>
+            </div>
+
+            {/* 50/30/20 Ideal Rule Reference */}
+            <div className="p-3 bg-slate-100/60 dark:bg-slate-800/40 rounded-xl text-xs space-y-1.5 border border-slate-200/50 dark:border-slate-800/50">
+              <p className="font-semibold text-slate-800 dark:text-slate-200 flex items-center justify-between text-[11px]">
+                <span>Alokasi Ideal 50/30/20:</span>
+                <span className="text-slate-500 font-normal">Gaji: Rp {numericIncome.toLocaleString('id-ID')}</span>
+              </p>
+              <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block">Kebutuhan 50%</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Rp {Math.round(numericIncome * 0.5).toLocaleString('id-ID')}</span>
+                </div>
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block">Keinginan 30%</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Rp {Math.round(numericIncome * 0.3).toLocaleString('id-ID')}</span>
+                </div>
+                <div className="p-1.5 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-400 block">Tabungan 20%</span>
+                  <span className="font-bold text-teal-600 dark:text-teal-400">Rp {Math.round(numericIncome * 0.2).toLocaleString('id-ID')}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -597,9 +723,31 @@ export function AiAdvisorPage() {
                         </div>
                       </div>
 
-                      <div className="markdown-body text-sm leading-relaxed space-y-2">
-                        <ReactMarkdown>{response}</ReactMarkdown>
+                      <div className="markdown-body text-sm leading-relaxed space-y-3">
+                        <ReactMarkdown>{cleanMarkdownText}</ReactMarkdown>
                       </div>
+
+                      {/* Interactive Suggested Follow-Up Prompts */}
+                      {extractedSuggestions.length > 0 && (
+                        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 not-prose">
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-teal-500" />
+                            Pertanyaan Lanjutan yang Disarankan:
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {extractedSuggestions.map((suggest, sIdx) => (
+                              <button
+                                key={sIdx}
+                                type="button"
+                                onClick={() => handleChipClick(suggest)}
+                                className="px-3 py-1.5 bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-900/50 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 rounded-xl text-xs font-semibold text-left transition-all cursor-pointer shadow-xs active:scale-98"
+                              >
+                                💬 {suggest}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -660,7 +808,7 @@ export function AiAdvisorPage() {
             </form>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 flex items-center justify-center gap-1.5 text-center px-2">
               <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
-              <span>Informasi bersifat simulasi edukasi finansial dan bukan saran investasi berizin OJK/Bappebti. Jangan bagikan data pribadi rahasia (PIN/Password).</span>
+              <span>Simulasi & edukasi finansial berbasis metodologi CFP, bukan rekomendasi investasi terikat atau penasihat berizin OJK/Bappebti. Jaga kerahasiaan PIN/Password.</span>
             </p>
           </div>
         </motion.div>

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const ChatMoodEnum = z.enum(['Profesional', 'Savage', 'Empathetic']);
+export const ChatMoodEnum = z.string().max(64).default('Profesional');
 
 export const FinancialProfileSchema = z.object({
   income: z.number({ message: "Pemasukan harus berupa angka" })
@@ -27,6 +27,7 @@ export const FinancialProfileSchema = z.object({
   monthlyDebt: z.number()
     .min(0, "Cicilan utang bulanan tidak boleh bernilai negatif")
     .default(0),
+  maritalStatus: z.string().max(64).optional().default('Lajang'),
   healthScore: z.number()
     .min(0, "Skor kesehatan keuangan minimal 0")
     .max(100, "Skor kesehatan keuangan maksimal 100")
@@ -49,6 +50,7 @@ export const ChatRequestSchema = z.object({
     investments: 0,
     totalDebt: 0,
     monthlyDebt: 0,
+    maritalStatus: 'Lajang',
     healthScore: 50,
     healthGrade: 'C',
     riskTolerance: 'Moderat',

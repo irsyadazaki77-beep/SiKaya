@@ -1,0 +1,6 @@
+{
+  "summary": "Implementation Plan for SiKaya Next Update:\n- Weekly Trading Arena & Competitive Tournament (Leaderboard, real-time ROI tracking, XP prize pools, and exclusive winner badges).\n- Real-time Cloud Firestore auto-sync with subtle online indicator widget in header & portfolio cards.\n- Live ROI calculation engine based on virtual trade executions.\n- Tournament status badges ('Aktif', 'Selesai', 'Pendaftaran') and participant ranks.",
+  "updatedAt": "2026-11-05T11:46:02.027370819Z",
+  "requestFeedback": true,
+  "userFacing": true
+}

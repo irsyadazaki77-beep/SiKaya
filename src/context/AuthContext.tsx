@@ -4,6 +4,7 @@ import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 
 export interface User {
+  uid?: string;
   fullName: string;
   email: string;
   avatar: string;

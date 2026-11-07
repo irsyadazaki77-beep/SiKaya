@@ -2,17 +2,15 @@ import helmet from 'helmet';
 import express, { Express } from 'express';
 
 export function configureSecurity(app: Express, isProduction: boolean): void {
-  const allowedFrameAncestors = isProduction
-    ? ["'none'"]
-    : [
-        "'self'", 
-        "https://*.google.com", 
-        "https://*.sandbox.google.com", 
-        "https://ai.studio", 
-        "https://*.aistudio.google.com", 
-        "https://*.run.app", 
-        "http://localhost:*"
-      ];
+  const allowedFrameAncestors = [
+    "'self'", 
+    "https://*.google.com", 
+    "https://*.sandbox.google.com", 
+    "https://ai.studio", 
+    "https://*.aistudio.google.com", 
+    "https://*.run.app", 
+    "http://localhost:*"
+  ];
 
   const scriptSrcDirectives = isProduction
     ? [

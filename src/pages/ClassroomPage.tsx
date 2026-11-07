@@ -25,6 +25,7 @@ import { ReksadanaModule } from '../components/classroom/ReksadanaModule';
 import { SahamModule } from '../components/classroom/SahamModule';
 import { CareerModule } from '../components/classroom/CareerModule';
 import { PortfolioModule } from '../components/classroom/PortfolioModule';
+import { CertificateModal } from '../components/classroom/CertificateModal';
 import { GLOSSARY_ITEMS } from '../data/glossary';
 import { featureLessons, LessonContent } from '../data/featureLessons';
 import { auth } from '../lib/firebase';
@@ -2467,9 +2468,18 @@ export function ClassroomPage() {
                   onClick={() => {
                     downloadLevelCertificate(lvl.title, lvl.subtitle, customCertName || user.fullName, user.xp);
                   }}
+                  className="px-4 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 text-slate-800 dark:text-slate-100 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-none"
+                >
+                  <Download className="w-4 h-4" /> Unduh PNG
+                </button>
+                <button
+                  onClick={async () => {
+                    downloadLevelCertificate(lvl.title, lvl.subtitle, customCertName || user.fullName, user.xp);
+                    toast.success("Sertifikat berhasil disiapkan dan diunduh!");
+                  }}
                   className="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white text-xs font-black rounded-xl transition-all flex items-center gap-1.5 cursor-pointer border-none shadow-sm"
                 >
-                  <Download className="w-4 h-4" /> Unduh Sertifikat (PNG)
+                  <Award className="w-4 h-4" /> Unduh Sertifikat Resmi
                 </button>
               </div>
             </motion.div>

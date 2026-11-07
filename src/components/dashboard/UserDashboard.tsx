@@ -12,6 +12,7 @@ import { FinancialProfileModal } from './FinancialProfileModal';
 import { FinancialProfile, FinancialGoal, BudgetEnvelope } from '../../types/financial';
 import { DEFAULT_FINANCIAL_PROFILE, calculateFinancialHealthScore } from '../../lib/financialHealth';
 import { formatRupiah } from '../../utils/financeUtils';
+import { TradingArenaSection } from './TradingArenaSection';
 
 export function UserDashboard() {
   const { user } = useAuth();
@@ -533,6 +534,9 @@ export function UserDashboard() {
 
         </div>
       </div>
+
+      {/* 3.5. Weekly Trading Arena Spotlight */}
+      <TradingArenaSection />
 
       {/* 4. MODALS: Edit Profile & Add Goal */}
       {showProfileModal && (

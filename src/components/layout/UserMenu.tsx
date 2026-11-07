@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'motion/react';
+import { CloudSyncIndicator } from './CloudSyncIndicator';
 
 interface UserMenuProps {
   isDarkMode: boolean;
@@ -56,6 +57,7 @@ export function UserMenu({ isDarkMode, onToggleDarkMode, onOpenSearch }: UserMen
 
   return (
     <div className="hidden md:flex items-center gap-1 xl:gap-1.5 shrink-0">
+      <CloudSyncIndicator />
       <div className="flex items-center gap-1 xl:gap-1.5 border-l border-slate-200/60 dark:border-slate-800 pl-1 xl:pl-3">
         {/* Search Trigger Button */}
         <button

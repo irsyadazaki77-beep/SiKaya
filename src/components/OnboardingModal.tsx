@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  User, Sparkles, ArrowRight, ArrowLeft, Check, Compass, 
+  User, ArrowRight, ArrowLeft, Check, Compass, 
   GraduationCap, Briefcase, Building, Laptop, ShieldCheck, 
-  Target, AlertTriangle, TrendingUp, Home, BookOpen, Clock
+  Target, AlertTriangle, TrendingUp, Home, BookOpen, X
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { FinancialProfile } from '../types/financial';
 
 export function OnboardingModal() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
@@ -33,10 +35,27 @@ export function OnboardingModal() {
     }
   }, []);
 
+  useEffect(() => {
+    if (user?.fullName && !name) {
+      setName(user.fullName);
+    }
+  }, [user, name]);
+
+  const handleClose = () => {
+    localStorage.setItem('sikaya_onboarding_completed', 'true');
+    setIsOpen(false);
+  };
+
+  const handleSkip = () => {
+    localStorage.setItem('sikaya_onboarding_completed', 'true');
+    setIsOpen(false);
+    toast.info('Onboarding dilewati. Selamat menjelajahi SiKaya!');
+  };
+
   const handleNext = () => {
     if (step === 1 && !name.trim()) {
-      toast.error('Harap masukkan nama panggilan Anda!');
-      return;
+      // Auto-fallback so user never gets stuck
+      setName(user?.fullName || 'Kawan SiKaya');
     }
     setStep(prev => prev + 1);
   };
@@ -46,8 +65,9 @@ export function OnboardingModal() {
   };
 
   const handleComplete = () => {
+    const effectiveName = name.trim() || user?.fullName || 'Kawan SiKaya';
     const persona = {
-      name: name.trim() || 'Pengguna SiKaya',
+      name: effectiveName,
       condition,
       primaryGoal,
       knowledgeLevel,
@@ -99,9 +119,8 @@ export function OnboardingModal() {
       localStorage.setItem('sikaya_fin_profile', JSON.stringify(initialProfile));
     }
 
-    toast.success(`Selamat datang, ${name || 'Kawan'}! Kurikulum & dashboard finansial Anda telah disesuaikan.`);
+    toast.success(`Selamat datang, ${effectiveName}! Dashboard finansial Anda telah disesuaikan.`);
     setIsOpen(false);
-    window.location.reload();
   };
 
   const getRecommendedAllocation = () => {
@@ -132,15 +151,30 @@ export function OnboardingModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div 
+        className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) handleClose();
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
         >
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="Tutup onboarding"
+            className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors z-20 cursor-pointer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           {/* Progress Indicators */}
-          <div className="flex gap-2 mb-6 relative z-10">
+          <div className="flex gap-2 mb-6 pr-8 relative z-10">
             {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
@@ -182,6 +216,12 @@ export function OnboardingModal() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleNext();
+                        }
+                      }}
                       placeholder="Contoh: Raka, Abel, Clara"
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-teal-500 focus:bg-white transition-all"
                     />
@@ -223,10 +263,7 @@ export function OnboardingModal() {
                 <div className="flex items-center justify-between pt-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      localStorage.setItem('sikaya_onboarding_completed', 'true');
-                      setIsOpen(false);
-                    }}
+                    onClick={handleSkip}
                     className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-pointer font-medium"
                   >
                     Lewati (Default)
@@ -355,7 +392,7 @@ export function OnboardingModal() {
                       id: 'Advanced',
                       title: 'Mahir (Advanced)',
                       desc: 'Sudah aktif berinvestasi di saham/kripto, ingin mengasah analisis valuasi laporan keuangan dan rebalancing.',
-                      icon: Sparkles
+                      icon: ShieldCheck
                     }
                   ].map((lvl) => {
                     const Icon = lvl.icon;
@@ -502,3 +539,4 @@ export function OnboardingModal() {
     </AnimatePresence>
   );
 }
+

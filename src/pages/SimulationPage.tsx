@@ -14,6 +14,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { db, auth } from '../lib/firebase';
 import { collection, addDoc, getDocs, query, where, limit } from 'firebase/firestore';
+import { notifyDataMutation } from '../components/layout/CloudSyncIndicator';
 
 interface Asset {
   symbol: string;
@@ -430,11 +431,20 @@ export function SimulationPage() {
     "TLKM": "TLKM.JK",
     "GOTO": "GOTO.JK",
     "BBCA": "BBCA.JK",
+    "ASII": "ASII.JK",
+    "AMMN": "AMMN.JK",
+    "ANTM": "ANTM.JK",
     "AAPL": "AAPL",
     "NVDA": "NVDA",
     "TSLA": "TSLA",
+    "MSFT": "MSFT",
+    "AMZN": "AMZN",
+    "META": "META",
     "BTC": "BTC-USD",
-    "GOLD": "GC=F"
+    "ETH": "ETH-USD",
+    "SOL": "SOL-USD",
+    "GOLD": "GC=F",
+    "SILVER": "SI=F"
   };
 
   const getTradingViewSymbol = (symbol: string) => {
@@ -443,11 +453,20 @@ export function SimulationPage() {
       case 'TLKM': return 'IDX:TLKM';
       case 'GOTO': return 'IDX:GOTO';
       case 'BBCA': return 'IDX:BBCA';
+      case 'ASII': return 'IDX:ASII';
+      case 'AMMN': return 'IDX:AMMN';
+      case 'ANTM': return 'IDX:ANTM';
       case 'AAPL': return 'NASDAQ:AAPL';
       case 'NVDA': return 'NASDAQ:NVDA';
       case 'TSLA': return 'NASDAQ:TSLA';
+      case 'MSFT': return 'NASDAQ:MSFT';
+      case 'AMZN': return 'NASDAQ:AMZN';
+      case 'META': return 'NASDAQ:META';
       case 'BTC': return 'BINANCE:BTCUSDT';
+      case 'ETH': return 'BINANCE:ETHUSDT';
+      case 'SOL': return 'BINANCE:SOLUSDT';
       case 'GOLD': return 'TVC:GOLD';
+      case 'SILVER': return 'TVC:SILVER';
       default: return `IDX:${symbol}`;
     }
   };
@@ -961,6 +980,7 @@ export function SimulationPage() {
         const updatedHistory = [newTx, ...virtualHistory];
         localStorage.setItem('sikaya_virtual_investments', JSON.stringify(updatedHistory));
       }
+      notifyDataMutation();
 
     } else {
       // JUAL
@@ -1028,6 +1048,7 @@ export function SimulationPage() {
         const updatedHistory = [newTx, ...virtualHistory];
         localStorage.setItem('sikaya_virtual_investments', JSON.stringify(updatedHistory));
       }
+      notifyDataMutation();
     }
   };
 

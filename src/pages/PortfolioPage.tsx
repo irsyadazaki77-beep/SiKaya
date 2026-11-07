@@ -68,11 +68,20 @@ const symbolMapping: Record<string, string> = {
   TLKM: "TLKM.JK",
   GOTO: "GOTO.JK",
   BBCA: "BBCA.JK",
+  ASII: "ASII.JK",
+  AMMN: "AMMN.JK",
+  ANTM: "ANTM.JK",
   AAPL: "AAPL",
   NVDA: "NVDA",
   TSLA: "TSLA",
+  MSFT: "MSFT",
+  AMZN: "AMZN",
+  META: "META",
   BTC: "BTC-USD",
-  GOLD: "GC=F"
+  ETH: "ETH-USD",
+  SOL: "SOL-USD",
+  GOLD: "GC=F",
+  SILVER: "SI=F"
 };
 
 export function PortfolioPage() {

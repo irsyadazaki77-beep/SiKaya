@@ -65,11 +65,20 @@ export class MarketBackendService {
       "TLKM.JK",
       "GOTO.JK",
       "BBCA.JK",
+      "ASII.JK",
+      "AMMN.JK",
+      "ANTM.JK",
       "AAPL",
       "NVDA",
       "TSLA",
+      "MSFT",
+      "AMZN",
+      "META",
       "BTC-USD",
+      "ETH-USD",
+      "SOL-USD",
       "GC=F",
+      "SI=F"
     ].join(",");
 
     let cookie: string | null = null;

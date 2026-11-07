@@ -74,6 +74,7 @@ export const firestoreService = {
       await addDoc(progressRef, {
         userId,
         moduleId,
+        status: 'COMPLETED',
         score,
         completedAt: new Date().toISOString()
       });

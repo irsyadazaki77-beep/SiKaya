@@ -34,6 +34,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { PageHeader } from '../components/PageHeader';
 import confetti from 'canvas-confetti';
+import { TradingArenaSection } from '../components/dashboard/TradingArenaSection';
 
 interface Player {
   name: string;
@@ -65,7 +66,7 @@ export function LeaderboardPage() {
   const { toast } = useToast();
   
   // Tab states
-  const [activeTab, setActiveTab] = useState<'peringkat' | 'misi' | 'pencapaian' | 'toko'>('peringkat');
+  const [activeTab, setActiveTab] = useState<'peringkat' | 'arena' | 'misi' | 'pencapaian' | 'toko'>('peringkat');
   
   // Leaderboard filters
   const [leaderboardPeriod, setLeaderboardPeriod] = useState<'semua' | 'mingguan' | 'harian'>('semua');
@@ -935,6 +936,7 @@ export function LeaderboardPage() {
           <div className="flex gap-2">
             {[
               { id: 'peringkat', label: 'Papan Peringkat', icon: <Trophy className="w-4 h-4" /> },
+              { id: 'arena', label: 'Arena Turnamen ⚡', icon: <Flame className="w-4 h-4 text-amber-500" /> },
               { id: 'misi', label: 'Misi Harian', icon: <Target className="w-4 h-4" /> },
               { id: 'pencapaian', label: 'Lencana Pencapaian', icon: <Award className="w-4 h-4" /> },
               { id: 'toko', label: 'Toko XP & Gelar', icon: <ShoppingBag className="w-4 h-4" /> },
@@ -1149,6 +1151,18 @@ export function LeaderboardPage() {
               </div>
 
             </div>
+          )}
+
+          {/* TAB: ARENA TURNAMEN MINGGUAN */}
+          {activeTab === 'arena' && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
+              <TradingArenaSection />
+            </motion.div>
           )}
 
           {/* TAB 2: MISI HARIAN */}

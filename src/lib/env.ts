@@ -1,6 +1,7 @@
 /**
  * Environment configuration and startup validation module.
  */
+import firebaseConfig from '../../firebase-applet-config.json';
 
 export interface EnvConfig {
   NODE_ENV: 'development' | 'production' | 'test';
@@ -33,17 +34,7 @@ export function validateEnvironment(): EnvConfig {
   }
 
   // Check Firebase configuration
-  let firebaseProjectId = process.env.FIREBASE_PROJECT_ID;
-  try {
-    // Check if firebase-applet-config exists
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const config = require('../../firebase-applet-config.json');
-    if (config?.projectId) {
-      firebaseProjectId = config.projectId;
-    }
-  } catch {
-    // Config file might not be present or required in some environments
-  }
+  const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || (firebaseConfig as any)?.projectId;
 
   if (!firebaseProjectId && isProduction) {
     errors.push("Firebase configuration is missing projectId. Ensure firebase-applet-config.json or FIREBASE_PROJECT_ID is provided.");

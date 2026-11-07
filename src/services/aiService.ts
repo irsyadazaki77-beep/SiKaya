@@ -35,12 +35,13 @@ export const aiService = {
 
     if (!res.ok) {
       const errorJson = await res.json().catch(() => ({}));
-      throw new Error(errorJson.error || `Server responded with status ${res.status}`);
+      const errorMsg = errorJson.error?.message || errorJson.error || `Server responded with status ${res.status}`;
+      throw new Error(errorMsg);
     }
 
     const data = await res.json();
     return {
-      answer: data.answer || 'Maaf, tidak ada respon dari asisten.',
+      answer: data.reply || data.answer || 'Maaf, tidak ada respon dari asisten.',
       disclaimer: data.disclaimer || 'Edukasi literasi finansial. Bukan rekomendasi investasi.',
       suggestedFollowUps: data.suggestedFollowUps || []
     };

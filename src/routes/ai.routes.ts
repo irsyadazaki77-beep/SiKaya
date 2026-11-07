@@ -8,7 +8,7 @@ export const aiRouter = express.Router();
 
 const activeAiUsers = new Set<string>();
 
-aiRouter.post('/chat', authenticate, aiChatLimiter, async (req, res, next) => {
+aiRouter.post(['/chat', '/advisor/chat'], authenticate, aiChatLimiter, async (req, res, next) => {
   const userUid = req.user?.uid || 'unknown';
 
   if (activeAiUsers.has(userUid)) {

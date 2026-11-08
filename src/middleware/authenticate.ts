@@ -50,6 +50,23 @@ export async function authenticate(
     );
   }
 
+  // Allow isolated demo token in non-production environments for guest access & automated testing
+  if (token === 'demo-token' && process.env.NODE_ENV !== 'production') {
+    req.user = {
+      uid: 'demo-user-123',
+      email: 'guest@sikaya.com',
+      name: 'Siswa Tamu (Demo)',
+      auth_time: Math.floor(Date.now() / 1000),
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      aud: 'demo-project',
+      iss: 'https://securetoken.google.com/demo-project',
+      sub: 'demo-user-123',
+      firebase: { identities: {}, sign_in_provider: 'anonymous' }
+    } as DecodedIdToken;
+    return next();
+  }
+
   try {
     const decodedToken = await adminAuth.verifyIdToken(token, true);
     req.user = decodedToken;

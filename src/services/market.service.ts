@@ -18,6 +18,7 @@ export class MarketBackendService {
 
     const fcRes = await fetch("https://fc.yahoo.com", {
       headers: { "User-Agent": userAgent },
+      signal: AbortSignal.timeout(3500),
     });
 
     let setCookies: string[] = [];
@@ -41,6 +42,7 @@ export class MarketBackendService {
         Cookie: cookieHeader,
         "User-Agent": userAgent,
       },
+      signal: AbortSignal.timeout(3500),
     });
 
     if (!crumbRes.ok) {
@@ -109,7 +111,10 @@ export class MarketBackendService {
           headers["Cookie"] = cookie;
         }
 
-        const response = await fetch(url, { headers });
+        const response = await fetch(url, {
+          headers,
+          signal: AbortSignal.timeout(3500),
+        });
 
         if (!response.ok) {
           throw new Error(`Yahoo Finance host ${host} responded with status ${response.status}`);

@@ -15,16 +15,16 @@ import {
 export const apiRouter = express.Router();
 
 export const OFFICIAL_MODULE_REGISTRY: Record<string, { title: string; xpReward: number }> = {
-  budgeting: { title: 'Aturan 50/30/20', xpReward: 50 },
-  debt: { title: 'Anti-FOMO & Pinjol', xpReward: 50 },
-  compound: { title: 'Compound Interest', xpReward: 50 },
-  investing: { title: 'Profil Risiko & Aset', xpReward: 50 },
-  emergency: { title: 'Dana Darurat & Uji Stres', xpReward: 50 },
-  crypto: { title: 'Crypto & Web3', xpReward: 50 },
-  reksadana: { title: 'Reksa Dana & SBN', xpReward: 50 },
-  saham: { title: 'Dasar Analisis Saham', xpReward: 50 },
-  career: { title: 'Peta Jalan Karir Baru', xpReward: 50 },
-  portfolio: { title: 'Rebalancing Portofolio', xpReward: 50 },
+  budgeting: { title: 'Aturan 50/30/20', xpReward: 100 },
+  debt: { title: 'Anti-FOMO & Pinjol', xpReward: 100 },
+  compound: { title: 'Compound Interest', xpReward: 100 },
+  investing: { title: 'Profil Risiko & Aset', xpReward: 100 },
+  emergency: { title: 'Dana Darurat & Uji Stres', xpReward: 100 },
+  crypto: { title: 'Crypto & Web3', xpReward: 100 },
+  reksadana: { title: 'Reksa Dana & SBN', xpReward: 100 },
+  saham: { title: 'Dasar Analisis Saham', xpReward: 100 },
+  career: { title: 'Peta Jalan Karir Baru', xpReward: 100 },
+  portfolio: { title: 'Rebalancing Portofolio', xpReward: 100 },
 };
 
 export const EVENT_REWARD_REGISTRY = {

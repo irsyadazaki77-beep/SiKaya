@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { HelpCircle, Sparkles, TrendingUp, DollarSign, Calendar, AlertTriangle, Coins } from 'lucide-react';
+import { calculateCompoundInterest, calculateSimpleInterest } from '../utils/financeUtils';
 
 export function InvestmentCalculator() {
   const [initialAmount, setInitialAmount] = useState(10000000);
@@ -28,24 +29,12 @@ export function InvestmentCalculator() {
 
   const calculateReturn = () => {
     // Effective rate adjusts for annual inflation if checked (average IDR inflation ~3.5%)
-    const rateToUse = adjustInflation ? (interestRate - 0.035) : interestRate;
-    const r = rateToUse;
+    const rateToUse = adjustInflation ? Math.max(0, interestRate - 0.035) : interestRate;
+    const ratePercent = rateToUse * 100;
     
-    let total = initialAmount;
-    
-    if (isCompound) {
-      // Annual compounding with monthly contributions
-      for (let i = 1; i <= years; i++) {
-        // Compound the existing balance for the year
-        total = total * (1 + r);
-        // Add 12 months of contributions at the end of each year
-        total += (monthlyContribution * 12) * (1 + r / 2); // simplified average compound for mid-year deposits
-      }
-    } else {
-      // Simple interest formula for initial + contributions
-      const principalSum = initialAmount + (monthlyContribution * 12 * years);
-      total = principalSum * (1 + r * years);
-    }
+    let total = isCompound
+      ? calculateCompoundInterest(initialAmount, monthlyContribution, ratePercent, years, 12)
+      : calculateSimpleInterest(initialAmount, monthlyContribution, ratePercent, years);
 
     // Apply estimated taxes & transaction spread (e.g., 0.5% standard fee) - Update 13
     if (applyFees && total > initialAmount) {

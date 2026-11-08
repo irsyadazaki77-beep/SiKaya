@@ -5,36 +5,17 @@ import { BookOpen, UserPlus, Sparkles, CheckCircle2, ArrowRight } from 'lucide-r
 import { motion } from 'motion/react';
 import { useToast } from '../context/ToastContext';
 
-const AVATARS = ['🦊', '🐱', '🐼', '🐨', '🦁', '🐸', '🦄', '🐝'];
-const LITERACY_LEVELS = [
-  { id: 'Buta Finansial', label: 'Buta Finansial 🙈', desc: 'Belum tahu cara budget bulanan & sering khilaf belanja' },
-  { id: 'Mulai Nabung', label: 'Mulai Nabung 🪙', desc: 'Sudah mulai menyisihkan uang, tapi bingung mau taruh mana' },
-  { id: 'Suhu Finansial', label: 'Suhu Finansial 🎓', desc: 'Sudah paham reksa dana, saham, dan disiplin kelola arus kas' }
-];
-
 export function LoginPage() {
   const { login, loginAsGuest, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  
-  // Login form state
-  const [loginEmail, setLoginEmail] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [loginSuccess, setLoginSuccess] = useState(false);
-
-  // Register form state
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regAvatar, setRegAvatar] = useState('🦊');
-  const [regLevel, setRegLevel] = useState('Buta Finansial');
-  const [regError, setRegError] = useState('');
-  const [regSuccess, setRegSuccess] = useState(false);
 
   const handleGoogleLogin = async () => {
     try {
       await login();
-      toast.success('Login berhasil!');
+      toast.success(activeTab === 'register' ? 'Pendaftaran berhasil! Selamat datang.' : 'Login berhasil!');
       navigate('/belajar');
     } catch (err) {
       setLoginError('Login gagal. Silakan coba lagi.');
@@ -102,9 +83,9 @@ export function LoginPage() {
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex bg-slate-100 p-1 rounded-xl mb-8 border border-slate-200/50">
+        <div className="flex bg-slate-100 p-1 rounded-xl mb-6 border border-slate-200/50">
           <button
-            onClick={() => { setActiveTab('login'); setLoginError(''); setRegError(''); }}
+            onClick={() => { setActiveTab('login'); setLoginError(''); }}
             className={`flex-1 py-2.5 text-xs sm:text-sm font-extrabold rounded-lg transition-all flex items-center justify-center gap-2 ${
               activeTab === 'login' 
                 ? 'bg-white text-slate-900 shadow-sm' 
@@ -114,7 +95,7 @@ export function LoginPage() {
             <BookOpen className="w-4 h-4" /> Masuk Kelas
           </button>
           <button
-            onClick={() => { setActiveTab('register'); setLoginError(''); setRegError(''); }}
+            onClick={() => { setActiveTab('register'); setLoginError(''); }}
             className={`flex-1 py-2.5 text-xs sm:text-sm font-extrabold rounded-lg transition-all flex items-center justify-center gap-2 ${
               activeTab === 'register' 
                 ? 'bg-white text-slate-900 shadow-sm' 
@@ -125,9 +106,21 @@ export function LoginPage() {
           </button>
         </div>
 
-        <div className="py-8 space-y-6">
+        {activeTab === 'register' && (
+          <div className="mb-6 p-4 bg-teal-50/70 border border-teal-200/60 rounded-2xl text-xs text-teal-900 flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-teal-950">Bonus Pendaftaran Siswa Baru 🎉</p>
+              <p className="text-teal-700 mt-0.5">Dapatkan otomatis modal virtual <strong>Rp 100.000.000</strong> untuk simulasi investasi, akses 10 modul berhadiah XP, dan sertifikat digital.</p>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-6">
           <p className="text-sm font-semibold text-slate-500 text-center px-4">
-            Masuk dengan Google atau gunakan Akun Tamu untuk menyimpan profil dan progress belajarmu.
+            {activeTab === 'register'
+              ? 'Daftar akun baru dengan Google atau coba langsung dengan Akun Tamu.'
+              : 'Masuk dengan Google atau gunakan Akun Tamu untuk melanjutkan progress belajarmu.'}
           </p>
 
           {loginError && (
@@ -146,7 +139,7 @@ export function LoginPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
-            Masuk dengan Google
+            {activeTab === 'register' ? 'Daftar dengan Google' : 'Masuk dengan Google'}
           </button>
 
           <div className="flex items-center my-4">

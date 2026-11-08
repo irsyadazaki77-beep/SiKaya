@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signOut(auth);
   };
 
-  const completeModule = async (moduleId: string, xpReward = 50) => {
+  const completeModule = async (moduleId: string, xpReward = 100) => {
     if (!user) return;
     if (user.completedModules.includes(moduleId)) return;
     

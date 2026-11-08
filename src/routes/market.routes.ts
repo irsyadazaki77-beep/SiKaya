@@ -100,18 +100,22 @@ marketRouter.get('/stock-prices', async (req, res, next) => {
       return res.json(responseBody);
     }
 
-    Logger.warn('[Market API] Live Yahoo Finance provider is unavailable. Returning structured unavailable state.');
+    // Robust Fallback: When upstream live data provider is unreachable, seamlessly
+    // provide the baseline simulation dataset so learners never get a blank trading simulator.
+    Logger.warn('[Market API] Live Yahoo Finance provider unreachable. Seamlessly activating simulation fallback dataset.');
+    const fallbackDataset = MarketBackendService.getMockMarketData();
+    res.setHeader('Cache-Control', 'public, max-age=15, stale-while-revalidate=30');
     const responseBody: MarketResponse = {
-      status: 'unavailable',
-      source: 'Yahoo Finance',
+      status: 'simulated',
+      source: 'Simulation Engine (Fallback)',
       lastUpdated: new Date().toISOString(),
       isRealtime: false,
-      isStale: true,
-      isSimulated: false,
+      isStale: false,
+      isSimulated: true,
       quoteResponse: {
-        result: [],
+        result: fallbackDataset,
       },
-      message: 'Data pasar sementara tidak tersedia.',
+      message: 'Data pasar menggunakan dataset simulasi terintegrasi SiKaya.',
     };
     return res.json(responseBody);
   } catch (error) {

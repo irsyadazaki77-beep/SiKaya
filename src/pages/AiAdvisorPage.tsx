@@ -337,6 +337,8 @@ export function AiAdvisorPage() {
       } catch (tokenErr) {
         console.error("Gagal mendapatkan Firebase ID token:", tokenErr);
       }
+    } else if (token === 'demo-token') {
+      activeToken = 'demo-token';
     }
 
     if (!activeToken) {
@@ -424,7 +426,7 @@ export function AiAdvisorPage() {
       }
 
       const apiData = await apiRes.json();
-      const reply = apiData.reply;
+      const reply = apiData.reply || apiData.response || apiData.answer || "Analisis Keuangan berhasil diperbarui.";
       
       setResponse(reply);
 

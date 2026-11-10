@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bot, Send, Sparkles, AlertCircle, Loader2, DollarSign, Wallet, ShieldCheck, ChevronDown, History, ShieldAlert, HeartHandshake, Skull, Download, HeartPulse, Mic, MicOff, RefreshCw } from 'lucide-react';
+import { Bot, Send, Sparkles, AlertCircle, Loader2, DollarSign, Wallet, ShieldCheck, ChevronDown, History, ShieldAlert, HeartHandshake, Skull, Download, HeartPulse, Mic, MicOff, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import { useAuth } from '../context/AuthContext';
@@ -94,12 +94,18 @@ export function AiAdvisorPage() {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
 
+  // Voice Speech Synthesis (TTS) State
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
         } catch (e) {}
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
       }
     };
   }, []);
@@ -158,6 +164,49 @@ export function AiAdvisorPage() {
       console.error('Speech recognition start failed:', err);
       setIsListening(false);
     }
+  };
+
+  const handleToggleSpeechSynthesis = () => {
+    if (!('speechSynthesis' in window)) {
+      toast.error('Browser Anda belum mendukung fitur sintesis suara (TTS).');
+      return;
+    }
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!cleanMarkdownText) return;
+
+    window.speechSynthesis.cancel();
+    const spokenText = cleanMarkdownText
+      .replace(/#{1,6}\s?/g, '')
+      .replace(/[*_~`]/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.lang = 'id-ID';
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      toast.info('🔊 Membacakan analisis AI SiKaya...');
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = (e) => {
+      console.warn('TTS error:', e);
+      setIsSpeaking(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const handleSyncProfile = () => {
@@ -328,6 +377,11 @@ export function AiAdvisorPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim()) return;
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
 
     // Check Firebase authentication
     let activeToken: string | null = null;
@@ -796,15 +850,31 @@ export function AiAdvisorPage() {
                           <span className="font-semibold text-slate-900 dark:text-white text-sm">Analisis AI ({selectedMood})</span>
                         </div>
                         
-                        <button 
-                          type="button"
-                          onClick={handleExportPDF}
-                          disabled={isExporting}
-                          className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium rounded-lg text-xs flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50"
-                        >
-                          {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                          <span>Unduh PDF</span>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            type="button"
+                            onClick={handleToggleSpeechSynthesis}
+                            className={`px-3 py-1.5 border font-medium rounded-lg text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                              isSpeaking 
+                                ? 'bg-rose-500 text-white border-rose-600 animate-pulse' 
+                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                            }`}
+                            title={isSpeaking ? 'Hentikan pembacaan suara' : 'Dengarkan penjelasan AI (Text-to-Speech)'}
+                          >
+                            {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-teal-600" />}
+                            <span>{isSpeaking ? 'Hentikan' : 'Dengarkan'}</span>
+                          </button>
+
+                          <button 
+                            type="button"
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
+                            className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium rounded-lg text-xs flex items-center gap-1.5 transition-all shadow-sm disabled:opacity-50 cursor-pointer"
+                          >
+                            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                            <span>Unduh PDF</span>
+                          </button>
+                        </div>
                       </div>
 
                       {/* Quick Metadata summary for PDF export visibility */}

@@ -372,7 +372,7 @@ export function ClassroomPage() {
       }, 1000);
     } else if (pomodoroSeconds === 0 && isPomodoroActive) {
       setIsPomodoroActive(false);
-      addXp(30);
+      addXp(30, 'POMODORO_COMPLETED');
       toast.success('🎉 Sesi Belajar Fokus 25 Menit Selesai! Anda mendapatkan +30 XP!');
       confetti({ particleCount: 30, spread: 70 });
     }
@@ -423,7 +423,7 @@ export function ClassroomPage() {
       toast.info('Anda sudah mengklaim bonus harian hari ini. Kembali lagi besok!');
       return;
     }
-    addXp(25);
+    addXp(25, 'DAILY_MISSION');
     setLastClaimDate(todayStr);
     localStorage.setItem('last_daily_claim_date', todayStr);
     toast.success('🔥 Bonus Harian Diklaim! +25 XP ditambahkan ke profil Anda!');
@@ -593,7 +593,7 @@ export function ClassroomPage() {
     const updated = [...readLessons, lessonId];
     setReadLessons(updated);
     localStorage.setItem('read_lessons', JSON.stringify(updated));
-    addXp(25);
+    addXp(25, 'LESSON_READ');
     toast.success("Hebat! Anda mendapatkan +25 XP karena rajin membaca.");
     confetti({
       particleCount: 20,
@@ -1493,7 +1493,7 @@ export function ClassroomPage() {
                               setDailyQuizFeedback(DAILY_QUIZ_QUESTIONS[currentQuizIdx].explanation);
                               if (!answeredQuizIds.includes(DAILY_QUIZ_QUESTIONS[currentQuizIdx].id)) {
                                 setAnsweredQuizIds([...answeredQuizIds, DAILY_QUIZ_QUESTIONS[currentQuizIdx].id]);
-                                addXp(50);
+                                addXp(50, 'DAILY_QUIZ');
                                 toast.success("Jawaban Benar! +50 XP berhasil ditambahkan.");
                               } else {
                                 toast.success("Jawaban Benar!");
@@ -2084,7 +2084,7 @@ export function ClassroomPage() {
                             const updated = [...readLessons, selectedLesson.id];
                             setReadLessons(updated);
                             localStorage.setItem('read_lessons', JSON.stringify(updated));
-                            addXp(25);
+                            addXp(25, 'LESSON_READ');
                             toast.success('🎉 Selesai Membaca! +25 XP ditambahkan!');
                             confetti({ particleCount: 25, spread: 60 });
                           } else {

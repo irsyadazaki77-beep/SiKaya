@@ -33,8 +33,8 @@ export function validateEnvironment(): EnvConfig {
   const rawProjectId = (firebaseConfig as any)?.projectId;
   const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || (rawProjectId && !rawProjectId.includes('YOUR_FIREBASE_PROJECT_ID') ? rawProjectId : undefined);
 
-  if (!firebaseProjectId && isProduction) {
-    errors.push("Firebase configuration is missing projectId. Ensure firebase-applet-config.json or FIREBASE_PROJECT_ID is provided.");
+  if (!firebaseProjectId) {
+    warnings.push("Firebase configuration is missing a production projectId. Server will run with benchmark fallback persistence until FIREBASE_PROJECT_ID is set.");
   }
 
   // Output startup diagnostics

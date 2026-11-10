@@ -22,7 +22,8 @@ interface AuthContextType {
   loginAsGuest: () => Promise<void>;
   logout: () => void;
   completeModule: (moduleId: string, xpReward?: number) => Promise<void>;
-  addXp: (amount: number, eventType?: 'QUIZ_COMPLETED' | 'DAILY_MISSION' | 'POMODORO_COMPLETED' | 'SIMULATOR_CHALLENGE' | 'CALCULATOR_ANALYSIS') => Promise<void>;
+  addXp: (amount: number, eventType?: 'QUIZ_COMPLETED' | 'DAILY_MISSION' | 'POMODORO_COMPLETED' | 'SIMULATOR_CHALLENGE' | 'CALCULATOR_ANALYSIS' | 'LESSON_READ' | 'CHEST_REWARD' | 'DAILY_QUIZ') => Promise<void>;
+  spendXp: (cost: number, itemType: 'avatar' | 'title', itemId: string) => Promise<boolean>;
   updateProfile: (fullName: string, avatar: string, literacyLevel?: string) => Promise<void>;
 }
 
@@ -213,7 +214,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addXp = async (amount: number, eventType: 'QUIZ_COMPLETED' | 'DAILY_MISSION' | 'POMODORO_COMPLETED' | 'SIMULATOR_CHALLENGE' | 'CALCULATOR_ANALYSIS' = 'QUIZ_COMPLETED') => {
+  const addXp = async (
+    amount: number,
+    eventType: 'QUIZ_COMPLETED' | 'DAILY_MISSION' | 'POMODORO_COMPLETED' | 'SIMULATOR_CHALLENGE' | 'CALCULATOR_ANALYSIS' | 'LESSON_READ' | 'CHEST_REWARD' | 'DAILY_QUIZ' = 'QUIZ_COMPLETED'
+  ) => {
     if (!user) return;
     const previousUser = { ...user };
     const optimisticXp = user.xp + amount;
@@ -257,6 +261,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const spendXp = async (cost: number, itemType: 'avatar' | 'title', itemId: string): Promise<boolean> => {
+    if (!user) return false;
+    if (user.xp < cost) return false;
+
+    const previousUser = { ...user };
+    const optimisticXp = Math.max(0, user.xp - cost);
+    setUser(prev => prev ? ({ ...prev, xp: optimisticXp }) : prev);
+
+    if (auth.currentUser) {
+      try {
+        const activeToken = await auth.currentUser.getIdToken();
+        const res = await fetch('/api/user/purchase-item', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${activeToken}`
+          },
+          body: JSON.stringify({ itemType, itemId, cost })
+        });
+
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.currentXp !== undefined) {
+            setUser(prev => prev ? ({ ...prev, xp: resData.currentXp }) : prev);
+          }
+          return true;
+        } else {
+          setUser(previousUser);
+          return false;
+        }
+      } catch (err) {
+        console.error("Network error deducting XP on server. Rolling back:", err);
+        setUser(previousUser);
+        return false;
+      }
+    } else if (token === 'demo-token') {
+      const updatedGuest = { ...user, xp: optimisticXp };
+      localStorage.setItem('guest_profile', JSON.stringify(updatedGuest));
+      return true;
+    }
+    return true;
+  };
+
   const updateProfile = async (fullName: string, avatar: string, literacyLevel?: string) => {
     if (!user) return;
     const previousUser = { ...user };
@@ -295,7 +342,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, token, login, loginAsGuest, logout, completeModule, addXp, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, token, login, loginAsGuest, logout, completeModule, addXp, spendXp, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

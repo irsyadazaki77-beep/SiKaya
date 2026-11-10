@@ -85,7 +85,8 @@ communityRouter.get('/posts', async (req, res, next) => {
 
     res.json({ success: true, posts });
   } catch (error) {
-    next(error);
+    // Graceful fallback to default forum posts if database is uninitialized or unreachable
+    res.json({ success: true, posts: DEFAULT_POSTS, fallback: true });
   }
 });
 
@@ -195,7 +196,8 @@ communityRouter.get('/shouts', async (req, res, next) => {
 
     res.json({ success: true, shouts });
   } catch (error) {
-    next(error);
+    // Graceful fallback to default shouts if database is uninitialized or unreachable
+    res.json({ success: true, shouts: DEFAULT_SHOUTS, fallback: true });
   }
 });
 

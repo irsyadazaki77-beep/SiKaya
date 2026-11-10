@@ -27,7 +27,7 @@ export async function createApp(isProduction: boolean): Promise<Express> {
   app.use('/api', generalApiLimiter);
 
   app.use('/api', healthRouter);
-  app.use('/api/user', authLimiter, userRouter);
+  app.use('/api/user', generalApiLimiter, userRouter);
   app.use('/api', aiRouter);
   app.use('/api', marketRouter);
   app.use('/api/community', communityRouter);

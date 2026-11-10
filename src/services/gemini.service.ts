@@ -225,15 +225,8 @@ PETUNJUK EKSEKUSI RESPON:
       contents = turns;
     }
 
-    Logger.info(`[Gemini Service] Sending CFP educational consultation request to gemini-3.8-flash (multi-turn turns: ${payload.history?.length || 0})`, { userUid, mood: payload.mood });
-
-    const generatePromise = ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents,
-      config: {
-        systemInstruction
-      }
-    });
+    const primaryModel = process.env.GEMINI_MODEL?.trim() || 'gemini-2.5-flash';
+    Logger.info(`[Gemini Service] Sending CFP educational consultation request to ${primaryModel} (multi-turn turns: ${payload.history?.length || 0})`, { userUid, mood: payload.mood });
 
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => {
@@ -247,8 +240,29 @@ PETUNJUK EKSEKUSI RESPON:
       }, 25000);
     });
 
+    const callModelWithFallback = async (modelName: string) => {
+      try {
+        return await ai.models.generateContent({
+          model: modelName,
+          contents,
+          config: { systemInstruction }
+        });
+      } catch (err: any) {
+        // If configured model is not found, fallback to gemini-1.5-flash
+        if (err?.message?.includes('not found') && modelName !== 'gemini-1.5-flash') {
+          Logger.warn(`[Gemini Service] Model '${modelName}' not found. Falling back to gemini-1.5-flash.`);
+          return await ai.models.generateContent({
+            model: 'gemini-1.5-flash',
+            contents,
+            config: { systemInstruction }
+          });
+        }
+        throw err;
+      }
+    };
+
     try {
-      const response = await Promise.race([generatePromise, timeoutPromise]);
+      const response = await Promise.race([callModelWithFallback(primaryModel), timeoutPromise]);
       
       if (!response || !response.text) {
         throw new AppError('Respon kosong diterima dari layanan AI.', 502, 'AI_BAD_GATEWAY');

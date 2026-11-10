@@ -80,6 +80,9 @@ npm test
 # Run tests with coverage report
 npm run test:coverage
 
+# Install Playwright browser binaries (for first-time E2E setup)
+npx playwright install chromium
+
 # Run Playwright E2E suites
 npm run test:e2e
 ```

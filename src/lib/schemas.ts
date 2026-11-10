@@ -93,7 +93,10 @@ export const EventTypeEnum = z.enum([
   'DAILY_MISSION',
   'POMODORO_COMPLETED',
   'SIMULATOR_CHALLENGE',
-  'CALCULATOR_ANALYSIS'
+  'CALCULATOR_ANALYSIS',
+  'LESSON_READ',
+  'CHEST_REWARD',
+  'DAILY_QUIZ'
 ]);
 
 export const ClaimEventSchema = z.object({
@@ -103,6 +106,14 @@ export const ClaimEventSchema = z.object({
 });
 
 export type ClaimEventInput = z.infer<typeof ClaimEventSchema>;
+
+export const PurchaseItemSchema = z.object({
+  itemType: z.enum(['avatar', 'title']),
+  itemId: z.string().min(1).max(128),
+  cost: z.number().positive("Biaya harus lebih besar dari 0")
+});
+
+export type PurchaseItemInput = z.infer<typeof PurchaseItemSchema>;
 
 export const UserProfileUpdateSchema = z.object({
   fullName: z.string().min(1).max(128).optional(),

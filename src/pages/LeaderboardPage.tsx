@@ -62,7 +62,7 @@ const renderAvatarContent = (avatar: string, fallback: string = '🦊') => {
 };
 
 export function LeaderboardPage() {
-  const { user, addXp, updateProfile } = useAuth();
+  const { user, addXp, spendXp, updateProfile } = useAuth();
   const { toast } = useToast();
   
   // Tab states
@@ -327,7 +327,7 @@ export function LeaderboardPage() {
     if (claimedMissions.includes(id)) return;
     const updated = [...claimedMissions, id];
     saveClaimedMissions(updated);
-    addXp(xp);
+    addXp(xp, 'DAILY_MISSION');
     
     // Confetti blast
     confetti({
@@ -355,7 +355,7 @@ export function LeaderboardPage() {
     });
 
     saveClaimedMissions(newClaimed);
-    addXp(totalXpGained);
+    addXp(totalXpGained, 'DAILY_MISSION');
 
     // Dynamic firework confetti
     const duration = 2 * 1000;
@@ -394,7 +394,7 @@ export function LeaderboardPage() {
 
     setClaimedChest(true);
     localStorage.setItem('sikaya_claimed_chest', 'true');
-    addXp(150);
+    addXp(150, 'CHEST_REWARD');
 
     // Big confetti burst
     confetti({
@@ -421,7 +421,7 @@ export function LeaderboardPage() {
     localStorage.setItem('sikaya_trivia_chosen', optionIdx.toString());
 
     if (correct) {
-      addXp(50);
+      addXp(50, 'DAILY_QUIZ');
       confetti({
         particleCount: 50,
         spread: 50,
@@ -459,7 +459,7 @@ export function LeaderboardPage() {
       return;
     }
 
-    addXp(-cost);
+    spendXp(cost, 'avatar', emoji);
     const updated = [...unlockedAvatars, emoji];
     saveUnlockedAvatars(updated);
     toast.success(`Pembelian Berhasil! Avatar '${emoji}' telah terbuka dan siap digunakan! 🛒✨`);
@@ -476,7 +476,7 @@ export function LeaderboardPage() {
       return;
     }
 
-    addXp(-cost);
+    spendXp(cost, 'title', title);
     const updated = [...unlockedTitles, title];
     saveUnlockedTitles(updated);
     toast.success(`Pembelian Berhasil! Gelar '${title}' kini tersemat di lemari lencanamu! 🏆✨`);

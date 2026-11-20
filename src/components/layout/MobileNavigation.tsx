@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { renderUserAvatar } from './UserMenu';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface MobileNavigationProps {
   isMenuOpen: boolean;
@@ -50,15 +51,7 @@ export function MobileNavigation({
     return paths.some(p => location.pathname === p || (p !== '/' && location.pathname.startsWith(p)));
   };
 
-  React.useEffect(() => {
-    if (isMenuOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isMenuOpen]);
+  useScrollLock(isMenuOpen, onCloseMenu);
 
   return (
     <>

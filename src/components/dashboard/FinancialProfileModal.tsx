@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { FinancialProfile } from '../../types/financial';
 import { Save, Wallet, ShieldAlert, Target, DollarSign } from 'lucide-react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface FinancialProfileModalProps {
   currentProfile: FinancialProfile;
@@ -35,13 +36,7 @@ export function FinancialProfileModal({ currentProfile, onSave, onClose }: Finan
     onSave(updated);
   };
 
-  React.useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = originalOverflow;
-    };
-  }, []);
+  useScrollLock(true, onClose);
 
   return (
     <div 

@@ -8,6 +8,7 @@ import {
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { FinancialProfile } from '../types/financial';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 export function OnboardingModal() {
   const { toast } = useToast();
@@ -35,15 +36,10 @@ export function OnboardingModal() {
     }
   }, []);
 
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
+  useScrollLock(isOpen, () => {
+    localStorage.setItem('sikaya_onboarding_completed', 'true');
+    setIsOpen(false);
+  });
 
   useEffect(() => {
     if (user?.fullName && !name) {

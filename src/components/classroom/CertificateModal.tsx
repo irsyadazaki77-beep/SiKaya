@@ -4,6 +4,7 @@ import { Trophy, Download, Award, CheckCircle2, X, Sparkles, Share2, Check } fro
 import confetti from 'canvas-confetti';
 import { exportElementToPdf } from '../../utils/exportUtils';
 import { useToast } from '../../context/ToastContext';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface CertificateModalProps {
   isOpen: boolean;
@@ -32,15 +33,7 @@ export function CertificateModal({
   const [isDownloading, setIsDownloading] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
+  useScrollLock(isOpen, onClose);
 
   const handleDownloadPdf = async () => {
     if (!certRef.current) return;

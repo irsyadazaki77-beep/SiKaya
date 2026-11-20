@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, BookOpen, Compass, ChevronRight, Sparkles, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SEARCH_INDEX, SearchItem } from '../../data/searchIndex';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface SearchPaletteProps {
   isOpen: boolean;
@@ -66,15 +67,7 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
     setSearchResults(filtered);
   }, [searchQuery]);
 
-  useEffect(() => {
-    if (isOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isOpen]);
+  useScrollLock(isOpen, onClose);
 
   return (
     <AnimatePresence>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useScrollLock } from '../hooks/useScrollLock';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PageHeader } from '../components/PageHeader';
 import { 
@@ -353,16 +354,18 @@ export function ClassroomPage() {
   const [showLevelCertModal, setShowLevelCertModal] = useState<string | null>(null);
 
   // Lock body scroll when modal is open
-  useEffect(() => {
-    const isAnyModalOpen = showCertificateModal || showLevelCertModal !== null || showGlossaryModal;
-    if (isAnyModalOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
+  useScrollLock(
+    showCertificateModal || showLevelCertModal !== null || showGlossaryModal,
+    () => {
+      if (showCertificateModal) setShowCertificateModal(false);
+      if (showLevelCertModal !== null) setShowLevelCertModal(null);
+      if (showGlossaryModal) {
+        setShowGlossaryModal(false);
+        setGlossarySearch('');
+        setGlossaryCategory('all');
+      }
     }
-  }, [showCertificateModal, showLevelCertModal, showGlossaryModal]);
+  );
   const [hasCelebrated, setHasCelebrated] = useState(false);
   const [customCertName, setCustomCertName] = useState('');
   

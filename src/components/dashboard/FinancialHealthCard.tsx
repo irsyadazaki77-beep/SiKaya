@@ -4,6 +4,7 @@ import { HeartPulse, Edit3, ChevronRight, X, Sparkles, BookOpen, CheckCircle2, A
 import { useNavigate } from 'react-router-dom';
 import { FinancialProfile, FinancialHealthScoreResult } from '../../types/financial';
 import { calculateFinancialHealthScore } from '../../lib/financialHealth';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface FinancialHealthCardProps {
   profile: FinancialProfile;
@@ -16,15 +17,7 @@ export function FinancialHealthCard({ profile, onEditProfile }: FinancialHealthC
   const healthResult: FinancialHealthScoreResult = calculateFinancialHealthScore(profile);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (showDetailModal) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [showDetailModal]);
+  useScrollLock(showDetailModal, () => setShowDetailModal(false));
 
   const getGradeColor = (grade: string) => {
     switch (grade) {

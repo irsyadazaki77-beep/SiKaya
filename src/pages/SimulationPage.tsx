@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { db, auth } from '../lib/firebase';
 import { collection, addDoc, getDocs, query, where, limit } from 'firebase/firestore';
 import { notifyDataMutation } from '../components/layout/CloudSyncIndicator';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface Asset {
   symbol: string;
@@ -486,16 +487,11 @@ export function SimulationPage() {
   const [showRiskModal, setShowRiskModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
-  useEffect(() => {
-    const isAnyModalOpen = showGoalModal || showRiskModal || showResetModal;
-    if (isAnyModalOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [showGoalModal, showRiskModal, showResetModal]);
+  useScrollLock(showGoalModal || showRiskModal || showResetModal, () => {
+    if (showGoalModal) setShowGoalModal(false);
+    if (showRiskModal) setShowRiskModal(false);
+    if (showResetModal) setShowResetModal(false);
+  });
 
   // Trading Badges (Achievements)
   const [achievements, setAchievements] = useState<Achievement[]>([

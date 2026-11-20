@@ -40,6 +40,30 @@ test.describe('SiKaya Public & Navigation Flows', () => {
     // Standard links should be present on desktop
     await expect(page.getByRole('link', { name: 'Fitur' }).first()).toBeVisible();
   });
+
+  test('page scrolls smoothly via mouse wheel', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('sikaya_onboarding_completed', 'true');
+    });
+    await page.goto('/');
+    await page.mouse.move(400, 300);
+    await page.mouse.wheel(0, 500);
+    await page.waitForTimeout(300);
+    const scrollY = await page.evaluate(() => window.scrollY);
+    expect(scrollY).toBeGreaterThan(0);
+  });
+
+  test('Ctrl+K opens and closes SearchPalette', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('sikaya_onboarding_completed', 'true');
+    });
+    await page.goto('/');
+    await page.keyboard.press('Control+k');
+    const searchInput = page.getByPlaceholder(/Cari materi, rumus, istilah/i);
+    await expect(searchInput).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(searchInput).not.toBeVisible();
+  });
 });
 
 test.describe('SiKaya Authentication Flows', () => {

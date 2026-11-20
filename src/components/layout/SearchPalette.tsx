@@ -13,6 +13,7 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchItem[]>([]);
   const [selectedResult, setSelectedResult] = useState<SearchItem | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Focus input on open
@@ -97,7 +98,31 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
             ref={searchInputRef}
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setActiveIndex(0);
+            }}
+            onKeyDown={(e) => {
+              if (searchResults.length === 0) return;
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setActiveIndex((prev) => (prev + 1) % searchResults.length);
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActiveIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const item = searchResults[activeIndex];
+                if (item) {
+                  if (item.details) {
+                    setSelectedResult(item);
+                  } else {
+                    onNavigateTo(item.url, item.state);
+                    onClose();
+                  }
+                }
+              }
+            }}
             placeholder="Cari materi, rumus, istilah, kuis, atau fitur..."
             className="w-full bg-transparent border-none text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
           />
@@ -126,9 +151,10 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
               <p className="text-xs text-slate-400 mt-1">Coba gunakan kata kunci lain seperti "Saham", "Budgeting", atau "Inflasi".</p>
             </div>
           ) : (
-            searchResults.map((item) => (
+            searchResults.map((item, idx) => (
               <div 
                 key={item.id}
+                onMouseEnter={() => setActiveIndex(idx)}
                 onClick={() => {
                   if (item.details) {
                     setSelectedResult(item);
@@ -137,7 +163,11 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
                     onClose();
                   }
                 }}
-                className="p-3 hover:bg-slate-50 dark:hover:bg-slate-850/60 rounded-2xl transition-all cursor-pointer flex items-start justify-between gap-3 group"
+                className={`p-3 rounded-2xl transition-all cursor-pointer flex items-start justify-between gap-3 group ${
+                  idx === activeIndex
+                    ? 'bg-teal-50/70 dark:bg-teal-950/30 ring-1 ring-teal-500/30'
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-850/60'
+                }`}
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">

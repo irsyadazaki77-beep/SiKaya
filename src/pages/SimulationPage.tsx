@@ -484,9 +484,10 @@ export function SimulationPage() {
   const [riskAnswers, setRiskAnswers] = useState<number[]>([]);
   const [riskResult, setRiskResult] = useState<string>('');
   const [showRiskModal, setShowRiskModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
 
   useEffect(() => {
-    const isAnyModalOpen = showGoalModal || showRiskModal;
+    const isAnyModalOpen = showGoalModal || showRiskModal || showResetModal;
     if (isAnyModalOpen) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
@@ -494,7 +495,7 @@ export function SimulationPage() {
         document.body.style.overflow = originalOverflow;
       };
     }
-  }, [showGoalModal, showRiskModal]);
+  }, [showGoalModal, showRiskModal, showResetModal]);
 
   // Trading Badges (Achievements)
   const [achievements, setAchievements] = useState<Achievement[]>([
@@ -1120,14 +1121,17 @@ export function SimulationPage() {
 
   // Clear / Reset Simulation
   const handleHardReset = () => {
-    if (window.confirm("Apakah Anda yakin ingin menyetel ulang seluruh portofolio simulasi ke modal awal?")) {
-      setCashIDR(100000000);
-      setCashUSD(10000);
-      setHoldings({});
-      setPendingOrders([]);
-      setTransactions([]);
-      setCurrentNews("Simulasi berhasil di-reset ke pengaturan awal.");
-    }
+    setShowResetModal(true);
+  };
+
+  const confirmHardReset = () => {
+    setCashIDR(100000000);
+    setCashUSD(10000);
+    setHoldings({});
+    setPendingOrders([]);
+    setTransactions([]);
+    setCurrentNews("Simulasi berhasil di-reset ke pengaturan awal.");
+    setShowResetModal(false);
   };
 
   // Top Up Fund Bonus
@@ -2073,6 +2077,49 @@ export function SimulationPage() {
                   </div>
                 </div>
               )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL 3: CONFIRM RESET SIMULATION */}
+      <AnimatePresence>
+        {showResetModal && (
+          <div
+            className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowResetModal(false);
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white dark:bg-slate-900 max-w-sm w-full rounded-3xl p-6 border border-slate-200 dark:border-slate-850 space-y-4 shadow-xl my-auto"
+            >
+              <div className="flex justify-between items-center border-b border-slate-150 dark:border-slate-800 pb-3">
+                <h3 className="text-sm font-black uppercase tracking-wider text-rose-600 dark:text-rose-400">Reset Simulasi</h3>
+                <button onClick={() => setShowResetModal(false)} className="cursor-pointer"><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Apakah Anda yakin ingin menyetel ulang seluruh portofolio simulasi, transaksi, dan saldo ke modal awal? Tindakan ini tidak dapat dibatalkan.
+              </p>
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmHardReset}
+                  className="flex-1 py-2.5 text-xs font-black text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition-all cursor-pointer shadow-sm"
+                >
+                  Ya, Reset
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

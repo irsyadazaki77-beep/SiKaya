@@ -1,5 +1,5 @@
 // SiKaya PWA Service Worker
-const CACHE_NAME = 'sikaya-cache-v1';
+const CACHE_NAME = 'sikaya-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -31,6 +31,11 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Only handle HTTP/HTTPS GET requests
+  if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
+    return;
+  }
 
   // Do not cache API or external auth requests
   if (url.pathname.startsWith('/api') || url.hostname.includes('firebase') || url.hostname.includes('googleapis')) {

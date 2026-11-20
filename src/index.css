@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
@@ -13,6 +12,18 @@
   --color-brand-emerald: #059669;
   --color-brand-indigo: #4f46e5;
   --color-brand-purple: #7c3aed;
+
+  /* Intermediate Tailwind shades used across SiKaya UI */
+  --color-slate-150: #e9eff6;
+  --color-slate-350: #b0becf;
+  --color-slate-450: #7d8ea3;
+  --color-slate-750: #293548;
+  --color-slate-850: #162033;
+  --color-teal-650: #0e857a;
+  --color-emerald-350: #52dfa7;
+  --color-amber-350: #fccb4d;
+  --color-rose-350: #fe8a9c;
+  --color-indigo-350: #93a2fe;
 }
 
 :root {

@@ -1979,7 +1979,7 @@ export function SimulationPage() {
                 onClick={() => setShowGoalModal(false)}
                 className="w-full py-2.5 text-xs font-black uppercase text-white bg-teal-600 rounded-xl hover:bg-teal-500 transition-all"
               >
-                Simpan Rencana Rencana
+                Simpan Rencana
               </button>
             </motion.div>
           </div>

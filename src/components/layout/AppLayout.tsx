@@ -37,6 +37,18 @@ export function AppLayout() {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
+  // Global ⌘K / Ctrl+K shortcut for SearchPalette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div className="min-h-screen min-h-[100dvh] bg-slate-50/50 dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 selection:bg-teal-100 selection:text-teal-900 dark:selection:bg-teal-950 dark:selection:text-teal-200 antialiased flex flex-col transition-colors duration-300">
       {/* Header Bar */}

@@ -351,6 +351,18 @@ export function ClassroomPage() {
   // Handle Confetti on All Completed
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [showLevelCertModal, setShowLevelCertModal] = useState<string | null>(null);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    const isAnyModalOpen = showCertificateModal || showLevelCertModal !== null || showGlossaryModal;
+    if (isAnyModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showCertificateModal, showLevelCertModal, showGlossaryModal]);
   const [hasCelebrated, setHasCelebrated] = useState(false);
   const [customCertName, setCustomCertName] = useState('');
   
@@ -2263,11 +2275,16 @@ export function ClassroomPage() {
 
       {/* RENDER CERTIFICATE MODAL */}
       {showCertificateModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div 
+          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowCertificateModal(false);
+          }}
+        >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 shadow-2xl relative space-y-6"
+            className="bg-white dark:bg-slate-900 rounded-3xl max-w-3xl w-full p-6 sm:p-8 border border-slate-200 shadow-2xl relative space-y-6 my-auto"
           >
             {/* Close Button */}
             <button
@@ -2369,11 +2386,16 @@ export function ClassroomPage() {
         if (!lvl) return null;
 
         return (
-          <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div 
+            className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowLevelCertModal(null);
+            }}
+          >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 border border-slate-200 dark:border-slate-850 shadow-2xl relative flex flex-col space-y-4"
+              className="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full p-6 border border-slate-200 dark:border-slate-850 shadow-2xl relative flex flex-col space-y-4 my-auto"
             >
               {/* Header */}
               <div className="flex justify-between items-start">
@@ -2489,11 +2511,20 @@ export function ClassroomPage() {
 
       {/* RENDER GLOSSARY MODAL */}
       {showGlossaryModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div 
+          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowGlossaryModal(false);
+              setGlossarySearch('');
+              setGlossaryCategory('all');
+            }
+          }}
+        >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 border border-slate-200 shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden"
+            className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-6 border border-slate-200 shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden my-auto"
           >
             {/* Header */}
             <div className="flex justify-between items-start border-b border-slate-100 dark:border-slate-850 pb-4">

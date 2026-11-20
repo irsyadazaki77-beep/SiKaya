@@ -50,6 +50,16 @@ export function MobileNavigation({
     return paths.some(p => location.pathname === p || (p !== '/' && location.pathname.startsWith(p)));
   };
 
+  React.useEffect(() => {
+    if (isMenuOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isMenuOpen]);
+
   return (
     <>
       {/* Semi-transparent backdrop when drawer is open */}

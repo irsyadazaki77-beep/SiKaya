@@ -65,16 +65,31 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
     setSearchResults(filtered);
   }, [searchQuery]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/60 backdrop-blur-md transition-opacity">
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: -20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: -20 }}
-        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden"
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-slate-900/60 backdrop-blur-md transition-opacity overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) onClose();
+          }}
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden my-auto sm:my-0"
+          >
         {/* Search Header Bar */}
         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3">
           <Search className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
@@ -193,5 +208,7 @@ export function SearchPalette({ isOpen, onClose, onNavigateTo }: SearchPalettePr
         </AnimatePresence>
       </motion.div>
     </div>
+    )}
+    </AnimatePresence>
   );
 }

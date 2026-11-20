@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { HeartPulse, Edit3, ChevronRight, X, Sparkles, BookOpen, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +15,16 @@ export function FinancialHealthCard({ profile, onEditProfile }: FinancialHealthC
   const [selectedPillar, setSelectedPillar] = useState<'all' | 'cashflow' | 'emergencyFund' | 'debtRatio' | 'savingsRate' | 'investmentAllocation'>('all');
   const healthResult: FinancialHealthScoreResult = calculateFinancialHealthScore(profile);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (showDetailModal) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showDetailModal]);
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
@@ -152,12 +162,17 @@ export function FinancialHealthCard({ profile, onEditProfile }: FinancialHealthC
       {/* DETAIL MODAL WITH WHY THIS SCORE & HOW TO IMPROVE */}
       <AnimatePresence>
         {showDetailModal && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowDetailModal(false);
+            }}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative my-auto"
             >
               {/* Header */}
               <div className="flex justify-between items-start mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">

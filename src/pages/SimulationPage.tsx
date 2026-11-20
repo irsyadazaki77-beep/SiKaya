@@ -485,6 +485,17 @@ export function SimulationPage() {
   const [riskResult, setRiskResult] = useState<string>('');
   const [showRiskModal, setShowRiskModal] = useState(false);
 
+  useEffect(() => {
+    const isAnyModalOpen = showGoalModal || showRiskModal;
+    if (isAnyModalOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showGoalModal, showRiskModal]);
+
   // Trading Badges (Achievements)
   const [achievements, setAchievements] = useState<Achievement[]>([
     { id: '1', title: 'Investor Pertama', desc: 'Lakukan pembelian instan pertamamu', unlocked: true, icon: '🔥' },
@@ -1925,12 +1936,17 @@ export function SimulationPage() {
       {/* MODAL 1: CHANGE FINANCIAL GOAL */}
       <AnimatePresence>
         {showGoalModal && (
-          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowGoalModal(false);
+            }}
+          >
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 max-w-sm w-full rounded-2xl p-6 border border-slate-200 dark:border-slate-850 space-y-4"
+              className="bg-white dark:bg-slate-900 max-w-sm w-full rounded-2xl p-6 border border-slate-200 dark:border-slate-850 space-y-4 my-auto"
             >
               <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 className="text-sm font-extrabold uppercase text-slate-800 dark:text-slate-100">Setel Ulang Target Finansial</h3>
@@ -1973,12 +1989,17 @@ export function SimulationPage() {
       {/* MODAL 2: RISK PROFILE DIAGNOSTICS */}
       <AnimatePresence>
         {showRiskModal && (
-          <div className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+          <div 
+            className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowRiskModal(false);
+            }}
+          >
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white dark:bg-slate-900 max-w-md w-full rounded-3xl p-6 border border-slate-200 space-y-4 shadow-xl"
+              className="bg-white dark:bg-slate-900 max-w-md w-full rounded-3xl p-6 border border-slate-200 space-y-4 shadow-xl my-auto"
             >
               <div className="flex justify-between items-center border-b border-slate-150 pb-3">
                 <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-slate-100">Evaluasi Profil Risiko</h3>
